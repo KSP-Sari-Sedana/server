@@ -1,8 +1,8 @@
 const express = require("express");
 const router = express.Router();
 
-router.get("/", function (req, res, next) {
-  res.json({ status: "server running" });
+router.get("/", (req, res) => {
+  res.json({ message: "server running" });
 });
 
 module.exports = router;
