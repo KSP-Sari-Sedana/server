@@ -1,18 +1,20 @@
 let express = require("express");
 let path = require("path");
 let cookieParser = require("cookie-parser");
-let logger = require("morgan");
+let morgan = require("morgan");
+require("dotenv").config();
 
-let indexRouter = require("./routes/index");
+const routes = require("./app/routes/index-route");
 
 let app = express();
 
-app.use(logger("dev"));
+app.use(morgan("dev"));
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 app.use(cookieParser());
 app.use(express.static(path.join(__dirname, "public")));
 
-app.use("/", indexRouter);
+const baseURL = `/api/${process.env.API_VERSION}`
+app.use(baseURL, routes);
 
 module.exports = app;
