@@ -5,7 +5,7 @@ module.exports = {
   checkFormatDataType(data) {
     const key = Object.keys(data)[0];
     const value = Object.values(data)[0];
-    validator.formatDataType(key, value);
+    validator.formatCredential(key, value);
     return response.success(200, { isAppropriate: true });
   },
 };

@@ -2,7 +2,7 @@ const validator = require("validator");
 const response = require("../helpers/response");
 
 module.exports = {
-  formatDataType(key, value) {
+  formatCredential(key, value) {
     switch (key) {
       case "email":
         if (!validator.isEmail(value)) throw response.error(400, { isAppropriate: false, message: `format ${key} salah` });
