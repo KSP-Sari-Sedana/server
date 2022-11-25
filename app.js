@@ -19,7 +19,6 @@ const baseURL = `/api/${process.env.API_VERSION}`;
 app.use(baseURL, routes);
 
 app.use((req, res) => {
-  console.log(req);
   res.status(404).json(response.error(404, { path: req.path, message: "url tidak ditemukan" }));
 });
 

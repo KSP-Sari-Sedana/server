@@ -25,4 +25,16 @@ module.exports = {
         throw response.error(400, { isAppropriate: false, message: `format ${key} tidak ditemukan` });
     }
   },
+
+  formatNonCredential(key, value) {
+    switch (key) {
+      case "nama depan":
+      case "nama belakang":
+        if (!validator.isAlpha(value)) throw response.error(400, { isAppropriate: false, message: `${key} hanya boleh huruf` });
+        if (!validator.isLength(value, { min: 3, max: 20 })) throw response.error(400, { isAppropriate: false, message: `${key} harus 3-20 karakter` });
+        break;
+      default:
+        throw response.error(400, { isAppropriate: false, message: `format ${key} tidak ditemukan` });
+    }
+  },
 };

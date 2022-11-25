@@ -9,4 +9,13 @@ module.exports = {
       res.status(errors.code).json(errors);
     }
   },
+
+  async register(req, res) {
+    try {
+      const result = await userService.register(req.body);
+      res.status(200).json(result);
+    } catch (errors) {
+      res.status(errors.code).json(errors);
+    }
+  },
 };
