@@ -1,7 +1,7 @@
 import dbPool from "../../config/database.js";
 
 async function findAll() {
-  const query = `SELECT nama, deskripsi, TRUNCATE(bunga, 2) AS bunga, status, tipe, jangka FROM produk`;
+  const query = `SELECT nama, deskripsi, TRUNCATE(bunga, 2) AS bunga, status, tipe, setoran, jangka FROM produk WHERE status = 'aktif'`;
   const [result] = await dbPool.execute(query);
   return result;
 }
