@@ -6,12 +6,6 @@ import { ReqError } from "../helpers/appError.js";
 import validate from "../helpers/validator.js";
 import schema from "../helpers/schema.js";
 
-/**
- * @description Register a new user
- * @param {Object} req.body
- * @returns {Response} res.json
- * @auth Public
- */
 async function register(req, res) {
   let { username, namaDepan, namaBelakang, email, password } = req.body;
 
