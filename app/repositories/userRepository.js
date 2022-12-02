@@ -1,13 +1,12 @@
 import dbPool from "../../config/database.js";
 
-async function findByCredential(columnName, value) {
+async function findAvailableCredential(columnName, value) {
   const query = `SELECT ${columnName} FROM pengguna WHERE ${columnName} = ? LIMIT 1`;
   const [result] = await dbPool.execute(query, [value]);
-  if (result.length === 0) {
-    return false;
-  } else {
+  if (result.length > 0) {
     return true;
   }
+  return false;
 }
 
 async function create(username, namaDepan, namaBelakang, email, hashedPassword) {
@@ -19,4 +18,4 @@ async function create(username, namaDepan, namaBelakang, email, hashedPassword) 
   return result[0];
 }
 
-export default { findByCredential, create };
+export default { findAvailableCredential, create };

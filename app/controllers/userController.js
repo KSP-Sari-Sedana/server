@@ -9,17 +9,18 @@ import schema from "../helpers/schema.js";
 async function register(req, res) {
   let { username, namaDepan, namaBelakang, email, password } = req.body;
 
-  validate(schema.username, { username: username });
-  validate(schema.email, { email: email });
-  validate(schema.namaDepan, { namaDepan: namaDepan });
-  validate(schema.namaBelakang, { namaBelakang: namaBelakang });
-  validate(schema.password, { password: password });
+  validate(schema.username, { username });
+  validate(schema.email, { email });
+  validate(schema.namaDepan, { namaDepan });
+  validate(schema.namaBelakang, { namaBelakang });
+  validate(schema.password, { password });
 
-  const isUsername = await userRepository.findByCredential("username", username);
+  const isUsername = await userRepository.findAvailableCredential("username", username);
+  console.log(isUsername);
   if (isUsername) {
     throw new ReqError(errorCodes.USERNAME_ALREADY_EXIST, { message: "Username tidak tersedia", flag: "username" }, 409);
   }
-  const isEmail = await userRepository.findByCredential("email", email);
+  const isEmail = await userRepository.findAvailableCredential("email", email);
   if (isEmail) {
     throw new ReqError(errorCodes.EMAIL_ALREADY_EXIST, { message: "Email tidak tersedia", flag: "email" }, 409);
   }
