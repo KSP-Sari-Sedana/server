@@ -72,4 +72,68 @@ const password = Joi.object({
   "object.unknown": "Terdapat field yang tidak diperbolehkan",
 });
 
-export default { username, email, namaDepan, namaBelakang, password };
+const namaProduk = Joi.object({
+  namaProduk: Joi.string()
+    .required()
+    .messages({
+      "string.empty": "Nama produk kosong",
+      "any.required": "Nama produk harus diisi",
+    })
+    .messages({
+      "object.unknown": "Terdapat field yang tidak diperbolehkan",
+    }),
+});
+
+const deskripsiProduk = Joi.object({
+  deskripsiProduk: Joi.string()
+    .required()
+    .min(40)
+    .messages({
+      "string.empty": "Deskripsi produk kosong",
+      "any.required": "Deskripsi produk harus diisi",
+      "string.min": "Deskripsi produk harus lebih dari 40 karakter",
+    })
+    .messages({
+      "object.unknown": "Terdapat field yang tidak diperbolehkan",
+    }),
+});
+
+const bungaProduk = Joi.object({
+  bungaProduk: Joi.number()
+    .required()
+    .messages({
+      "any.required": "Bunga produk harus diisi",
+      "number.base": "Bunga harus angka",
+    })
+    .messages({
+      "object.unknown": "Terdapat field yang tidak diperbolehkan",
+    }),
+});
+
+const tipeProduk = Joi.object({
+  tipeProduk: Joi.string()
+    .valid("Simpanan", "Pinjaman")
+    .required()
+    .messages({
+      "any.only": "Tipe produk harus simpanan atau pinjaman",
+      "any.required": "Tipe produk harus diisi",
+    })
+    .messages({
+      "object.unknown": "Terdapat field yang tidak diperbolehkan",
+    }),
+});
+
+const setoranProduk = Joi.object({
+  setoranProduk: Joi.string()
+    .valid("Bulanan", "Harian")
+    .required()
+    .messages({
+      "any.only": "Setoran produk harus bulanan atau harian",
+      "any.required": "Setoran produk harus diisi",
+    })
+    .messages({
+      "object.unknown": "Terdapat field yang tidak diperbolehkan",
+    }),
+});
+
+export default { username, email, namaDepan, namaBelakang, password, namaProduk, deskripsiProduk, bungaProduk, tipeProduk, setoranProduk };
