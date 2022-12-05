@@ -2,6 +2,8 @@ import express from "express";
 import cookieParser from "cookie-parser";
 import morgan from "morgan";
 import "dotenv/config";
+import path, { dirname } from "path";
+import { fileURLToPath } from "url";
 
 import routes from "../app/routes/indexRoute.js";
 import errorHandler from "../app/middlewares/errorHandler.js";
@@ -12,6 +14,7 @@ app.use(morgan("dev"));
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 app.use(cookieParser());
+app.use(express.static(path.join(dirname(fileURLToPath(import.meta.url)), "../public")));
 
 const baseURL = `/api/${process.env.API_VERSION}`;
 app.use(baseURL, routes);
