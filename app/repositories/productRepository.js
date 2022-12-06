@@ -12,4 +12,10 @@ async function findById(id) {
   return result;
 }
 
-export default { findAll, findById };
+async function create(namaProduk, fotoProduk, deskripsiProduk, bungaProduk, tipeProduk, setoranProduk, tenorProduk, angsuranProduk) {
+  let query = `INSERT INTO produk(nama, foto, deskripsi, bunga, tipe, setoran, tenor, angsuran) VALUES(?, ?, ?, ?, ?, ?, ?, ?)`;
+  const [result] = await dbPool.execute(query, [namaProduk, fotoProduk, deskripsiProduk, bungaProduk, tipeProduk, setoranProduk, tenorProduk, angsuranProduk]);
+  return result;
+}
+
+export default { findAll, findById, create };
