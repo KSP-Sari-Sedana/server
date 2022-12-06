@@ -5,7 +5,7 @@ import("dotenv/config");
 import userRepository from "../repositories/userRepository.js";
 import validate from "../helpers/validator.js";
 import schema from "../helpers/schema.js";
-import { ReqError } from "../helpers/appError.js";
+import { APIError, ReqError } from "../helpers/appError.js";
 import errorCodes from "../constants/errorCodes.js";
 
 async function login(req, res) {
@@ -31,4 +31,17 @@ async function login(req, res) {
   res.status(202).json({ statusCode: 202, message: "Login berhasil", data: { token } });
 }
 
-export default { login };
+async function authorize(req, res, next) {
+  const bearerToken = req.headers.authorization;
+  const token = bearerToken?.split("Bearer ")[1];
+  const tokenPayload = jwt.verify(token, process.env.JWT_SECRET, (err, decoded) => {
+    if (err) throw new APIError(errorCodes.INVALID_TOKEN, "Token tidak valid", 401);
+    return decoded;
+  });
+
+  req.user = await userRepository.findByCredential("username", tokenPayload.username);
+  if (!req.user) throw new APIError(errorCodes.INVALID_TOKEN, "Token tidak valid", 401);
+  next();
+}
+
+export default { login, authorize };
