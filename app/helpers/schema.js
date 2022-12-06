@@ -136,4 +136,31 @@ const setoranProduk = Joi.object({
     }),
 });
 
-export default { username, email, namaDepan, namaBelakang, password, namaProduk, deskripsiProduk, bungaProduk, tipeProduk, setoranProduk };
+const tenorProduk = Joi.object({
+  tenorProduk: Joi.array().required().items(Joi.number()).messages({
+    "any.required": "Tenor produk harus diisi",
+    "array.base": "Tenor produk harus tipe data array",
+  }),
+});
+
+const angsuranProduk = Joi.object({
+  angsuranProduk: Joi.array().required().items(Joi.number()).messages({
+    "any.required": "Angsuran produk harus diisi",
+    "array.base": "Angsuran produk harus tipe data array",
+  }),
+});
+
+export default {
+  username,
+  email,
+  namaDepan,
+  namaBelakang,
+  password,
+  namaProduk,
+  deskripsiProduk,
+  bungaProduk,
+  tipeProduk,
+  setoranProduk,
+  tenorProduk,
+  angsuranProduk
+};
