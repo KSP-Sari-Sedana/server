@@ -16,7 +16,6 @@ async function register(req, res) {
   validate(schema.password, { password });
 
   const isUsername = await userRepository.findAvailableCredential("username", username);
-  console.log(isUsername);
   if (isUsername) {
     throw new ReqError(errorCodes.USERNAME_ALREADY_EXIST, { message: "Username tidak tersedia", flag: "username" }, 409);
   }
@@ -32,7 +31,7 @@ async function register(req, res) {
 
   const user = await userRepository.create(username, namaDepan, namaBelakang, email, hashedPassword);
 
-  res.status(201).json({ statusCode: 201, message: "Registrasi berhasil", data: user });
+  res.status(201).json({ statusCode: 201, message: "Registrasi berhasil", data: { user } });
 }
 
 export default { register };
