@@ -38,9 +38,9 @@ async function create(req, res) {
   const filePath = `images/product/${fileName}`;
   fs.writeFileSync(`./public/${filePath}`, buffer);
 
-  const { affectedRows, insertId } = await productRepository.create(namaProduk, filePath, deskripsiProduk, bungaProduk, tipeProduk, setoranProduk, tenorProduk, angsuranProduk);
+  const { insertId } = await productRepository.create(namaProduk, filePath, deskripsiProduk, bungaProduk, tipeProduk, setoranProduk, tenorProduk, angsuranProduk);
   const product = await productRepository.findById(insertId);
-  res.status(201).json({ statusCode: 201, message: "Suskes membuat produk", data: { affectedRows, product: product[0] } });
+  res.status(201).json({ statusCode: 201, message: "Suskes membuat produk", data: { product: product[0] } });
 }
 
 export default { get, create };
