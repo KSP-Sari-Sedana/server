@@ -2,7 +2,7 @@ import bcrypt from "bcryptjs";
 
 import userRepository from "../repositories/userRepository.js";
 import errorCodes from "../constants/errorCodes.js";
-import { ReqError } from "../helpers/appError.js";
+import { ReqError, APIError } from "../helpers/appError.js";
 import validate from "../helpers/validator.js";
 import schema from "../helpers/schema.js";
 
@@ -34,4 +34,19 @@ async function register(req, res) {
   res.status(201).json({ statusCode: 201, message: "Registrasi berhasil", data: { user } });
 }
 
-export default { register };
+async function getByUsername(req, res) {
+  validate(schema.username, { username: req.params.username });
+
+  const { role, status } = req.user;
+
+  if ((role !== "Admin" && role !== "Teller") || status !== "Aktif") {
+    throw new APIError(errorCodes.RESOURCE_FORBIDDEN, "Akses mendapatkan data user ditolak", 403);
+  }
+
+  const user = await userRepository.findByCredential("username", req.params.username);
+  delete user?.password;
+  if (!user) throw new ReqError(errorCodes.RESOURCE_NOT_FOUND, { message: "User tidak ditemukan" }, 404);
+  res.status(200).json({ message: "Sukses mendapatkan user", data: { user } });
+}
+
+export default { register, getByUsername };
