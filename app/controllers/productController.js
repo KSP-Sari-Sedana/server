@@ -13,7 +13,7 @@ async function get(req, res) {
 
 async function create(req, res) {
   const { role, status } = req.user;
-  if (role !== "admin" || status !== "aktif") {
+  if (role !== "Admin" || status !== "Aktif") {
     throw new ReqError(errorCodes.NOT_ADMIN, { message: "Anda tidak memiliki akses untuk membuat produk" }, 403);
   }
 
