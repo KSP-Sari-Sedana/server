@@ -1,7 +1,7 @@
 import fs from "fs";
 
 import productRepository from "../repositories/productRepository.js";
-import errorCodes from "../constants/errorCodes.js";
+import errorCode from "../constants/errorCode.js";
 import { ReqError } from "../helpers/appError.js";
 import validate from "../helpers/validator.js";
 import schema from "../helpers/schema.js";
@@ -14,7 +14,7 @@ async function get(req, res) {
 async function create(req, res) {
   const { role, status } = req.user;
   if (role !== "Admin" || status !== "Aktif") {
-    throw new ReqError(errorCodes.NOT_ADMIN, { message: "Anda tidak memiliki akses untuk membuat produk" }, 403);
+    throw new ReqError(errorCode.NOT_ADMIN, { message: "Anda tidak memiliki akses untuk membuat produk" }, 403);
   }
 
   let { namaProduk, fotoProduk, deskripsiProduk, bungaProduk, tipeProduk, setoranProduk, tenorProduk, angsuranProduk } = req.body;
@@ -29,7 +29,7 @@ async function create(req, res) {
 
   const ext = fotoProduk.split(";")[0].match(/png|jpg|jpeg|svg/gi)?.[0];
   if (ext === undefined) {
-    throw new ReqError(errorCodes.INVALID_FILE, { message: "File yang diupload tidak valid" }, 400);
+    throw new ReqError(errorCode.INVALID_FILE, { message: "File yang diupload tidak valid" }, 400);
   }
 
   const base64 = fotoProduk.split(",")[1];

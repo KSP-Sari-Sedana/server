@@ -1,7 +1,7 @@
 import bcrypt from "bcryptjs";
 
 import userRepository from "../repositories/userRepository.js";
-import errorCodes from "../constants/errorCodes.js";
+import errorCode from "../constants/errorCode.js";
 import { ReqError, APIError } from "../helpers/appError.js";
 import validate from "../helpers/validator.js";
 import schema from "../helpers/schema.js";
@@ -17,11 +17,11 @@ async function register(req, res) {
 
   const isUsername = await userRepository.findAvailableCredential("username", username);
   if (isUsername) {
-    throw new ReqError(errorCodes.USERNAME_ALREADY_EXIST, { message: "Username tidak tersedia", flag: "username" }, 409);
+    throw new ReqError(errorCode.USERNAME_ALREADY_EXIST, { message: "Username tidak tersedia", flag: "username" }, 409);
   }
   const isEmail = await userRepository.findAvailableCredential("email", email);
   if (isEmail) {
-    throw new ReqError(errorCodes.EMAIL_ALREADY_EXIST, { message: "Email tidak tersedia", flag: "email" }, 409);
+    throw new ReqError(errorCode.EMAIL_ALREADY_EXIST, { message: "Email tidak tersedia", flag: "email" }, 409);
   }
 
   const salt = await bcrypt.genSalt(10);
@@ -40,11 +40,11 @@ async function getByUsername(req, res) {
   const { role, status } = req.user;
 
   if ((role !== "Admin" && role !== "Teller") || status !== "Aktif") {
-    throw new APIError(errorCodes.RESOURCE_FORBIDDEN, "Akses mendapatkan data user ditolak", 403);
+    throw new APIError(errorCode.RESOURCE_FORBIDDEN, "Akses mendapatkan data user ditolak", 403);
   }
 
   const user = await userRepository.findByCredential("username", req.params.username);
-  if (!user) throw new ReqError(errorCodes.RESOURCE_NOT_FOUND, { message: "User tidak ditemukan" }, 404);
+  if (!user) throw new ReqError(errorCode.RESOURCE_NOT_FOUND, { message: "User tidak ditemukan" }, 404);
 
   delete user.password;
 
