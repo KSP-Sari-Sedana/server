@@ -8,7 +8,7 @@ import schema from "../helpers/schema.js";
 
 async function get(req, res) {
   const products = await productRepository.findAll();
-  res.status(200).json({ statusCode: 200, message: "Sukses mendapatkan semua produk", data: { products } });
+  res.status(200).json({ message: "Sukses mendapatkan semua produk", data: { products } });
 }
 
 async function create(req, res) {
@@ -40,7 +40,7 @@ async function create(req, res) {
 
   const { insertId } = await productRepository.create(namaProduk, filePath, deskripsiProduk, bungaProduk, tipeProduk, setoranProduk, tenorProduk, angsuranProduk);
   const product = await productRepository.findById(insertId);
-  res.status(201).json({ statusCode: 201, message: "Suskes membuat produk", data: { product: product[0] } });
+  res.status(201).json({ message: "Suskes membuat produk", data: { product: product[0] } });
 }
 
 export default { get, create };

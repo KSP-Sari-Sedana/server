@@ -31,7 +31,7 @@ async function register(req, res) {
 
   const user = await userRepository.create(username, namaDepan, namaBelakang, email, hashedPassword);
 
-  res.status(201).json({ statusCode: 201, message: "Registrasi berhasil", data: { user } });
+  res.status(201).json({ message: "Registrasi berhasil", data: { user } });
 }
 
 async function getByUsername(req, res) {

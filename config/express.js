@@ -22,7 +22,7 @@ app.use(baseURL, routes);
 app.use(errorHandler);
 
 app.use((req, res) => {
-  res.status(404).json({ statusCode: 404, path: req.path, error: { message: "Not found", method: req.method } });
+  res.status(404).json({ method: req.method, error: { message: "Path not found" } });
 });
 
 export default app;

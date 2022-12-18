@@ -15,10 +15,10 @@ class APIError extends ExtendableError {
 }
 
 class ReqError extends ExtendableError {
-  constructor(errorCode, error, statusCode) {
-    super(errorCode, error.message, statusCode);
+  constructor(errorCode, errorStack, statusCode) {
+    super(errorCode, errorStack.message, statusCode);
 
-    this.error = error;
+    this.errorStack = errorStack;
   }
 }
 

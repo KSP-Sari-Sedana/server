@@ -28,7 +28,7 @@ async function login(req, res) {
   };
 
   const token = jwt.sign(payload, process.env.JWT_SECRET, { expiresIn: process.env.JWT_EXPIRES_IN });
-  res.status(202).json({ statusCode: 202, message: "Login berhasil", data: { token } });
+  res.status(202).json({ message: "Login berhasil", data: { token } });
 }
 
 async function authorize(req, res, next) {
