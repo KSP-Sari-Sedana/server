@@ -44,8 +44,10 @@ async function getByUsername(req, res) {
   }
 
   const user = await userRepository.findByCredential("username", req.params.username);
-  delete user?.password;
   if (!user) throw new ReqError(errorCodes.RESOURCE_NOT_FOUND, { message: "User tidak ditemukan" }, 404);
+
+  delete user.password;
+
   res.status(200).json({ message: "Sukses mendapatkan user", data: { user } });
 }
 
