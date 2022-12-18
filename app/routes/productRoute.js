@@ -1,11 +1,11 @@
 import express from "express";
 const router = express.Router();
 
-import productControllers from "../controllers/productController.js";
-import authControllers from "../controllers/authController.js";
+import productController from "../controllers/productController.js";
+import authController from "../controllers/authController.js";
 import tryCatch from "../utils/tryCatch.js";
 
-router.get("/", tryCatch(productControllers.get));
-router.post("/", tryCatch(authControllers.authorize), tryCatch(productControllers.create));
+router.get("/", tryCatch(productController.get));
+router.post("/", tryCatch(authController.authorize), tryCatch(productController.create));
 
 export default router;

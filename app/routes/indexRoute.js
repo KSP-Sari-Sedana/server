@@ -1,18 +1,18 @@
 import express from "express";
 const router = express.Router();
 
-import userRoutes from "./userRoute.js";
-import authRoutes from "./authRoute.js";
-import docRoutes from "./docRoute.cjs";
-import productRoutes from "./productRoute.js";
+import userRoute from "./userRoute.js";
+import authRoute from "./authRoute.js";
+import docRoute from "./docRoute.cjs";
+import productRoute from "./productRoute.js";
 
 router.get("/", (req, res) => {
   res.json({ message: "server running" });
 });
 
-router.use("/users", userRoutes);
-router.use("/auth", authRoutes);
-router.use("/docs", docRoutes);
-router.use("/products", productRoutes);
+router.use("/users", userRoute);
+router.use("/auth", authRoute);
+router.use("/docs", docRoute);
+router.use("/products", productRoute);
 
 export default router;
