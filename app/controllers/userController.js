@@ -51,4 +51,15 @@ async function getByUsername(req, res) {
   res.status(200).json({ message: "Sukses mendapatkan user", data: { user } });
 }
 
-export default { register, getByUsername };
+async function myIdentity(req, res) {
+  const { username } = req.user;
+
+  const user = await userRepository.findByCredential("username", username);
+  if (!user) throw new ReqError(errorCode.RESOURCE_NOT_FOUND, { message: "User tidak ditemukan" }, 404);
+
+  delete user?.password;
+
+  res.status(200).json({ message: "Sukses mendapatkan user", data: { user } });
+}
+
+export default { register, getByUsername, myIdentity };
