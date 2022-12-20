@@ -9,7 +9,7 @@ async function findAll() {
 async function findById(id) {
   const query = `SELECT nama, foto, deskripsi, TRUNCATE(bunga, 2) AS bunga, status, tipe, setoran, tenor, angsuran FROM produk WHERE id = ?`;
   const [result] = await dbPool.execute(query, [id]);
-  return result;
+  return result[0];
 }
 
 async function create(namaProduk, fotoProduk, deskripsiProduk, bungaProduk, tipeProduk, setoranProduk, tenorProduk, angsuranProduk) {
