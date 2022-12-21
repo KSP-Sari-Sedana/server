@@ -1,6 +1,7 @@
 import express from "express";
 import cookieParser from "cookie-parser";
 import morgan from "morgan";
+import cors from "cors";
 import "dotenv/config";
 import path, { dirname } from "path";
 import { fileURLToPath } from "url";
@@ -10,6 +11,7 @@ import errorHandler from "../app/middlewares/errorHandler.js";
 
 const app = express();
 
+app.use(cors());
 app.use(morgan("dev"));
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
