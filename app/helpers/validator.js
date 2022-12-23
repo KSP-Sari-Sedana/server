@@ -7,7 +7,7 @@ function validate(schema, data) {
     const { details } = error;
     const { key } = details[0].context;
     const message = details.map((i) => i.message).join(",");
-    throw new ReqError(errorCode.INVALID_SCHEMA, { message: message, flag: key }, 400);
+    throw new ReqError(errorCode.INVALID_SCHEMA, message, { flag: key }, 400);
   }
   return true;
 }

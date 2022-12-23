@@ -8,6 +8,7 @@ import { fileURLToPath } from "url";
 
 import routes from "../app/routes/indexRoute.js";
 import errorHandler from "../app/middlewares/errorHandler.js";
+import { ReqError } from "../app/helpers/appError.js";
 
 const app = express();
 
@@ -24,7 +25,7 @@ app.use(baseURL, routes);
 app.use(errorHandler);
 
 app.use((req, res) => {
-  res.status(404).json({ method: req.method, error: { message: "Path not found" } });
+  res.status(404).json({ errorCode: null, status: "Not Found", message: "Not Found", data: null, errors: null });
 });
 
 export default app;

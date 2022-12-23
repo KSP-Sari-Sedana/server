@@ -7,6 +7,7 @@ import validate from "../helpers/validator.js";
 import schema from "../helpers/schema.js";
 import { APIError, ReqError } from "../helpers/appError.js";
 import errorCode from "../constants/errorCode.js";
+import { APISuccess } from "../helpers/response.js";
 
 async function login(req, res) {
   const { email, password } = req.body;
@@ -15,11 +16,11 @@ async function login(req, res) {
   validate(schema.password, { password });
 
   const user = await userRepository.findByCredential("email", email);
-  if (!user) throw new ReqError(errorCode.INVALID_USER, { message: "Email atau password salah" }, 401);
+  if (!user) throw new ReqError(errorCode.INVALID_USER, "Email atau password salah", { flag: "email or password" }, 401);
 
   const hashedPassword = user.password;
   const isPasswordMatch = bcrypt.compareSync(password, hashedPassword);
-  if (!isPasswordMatch) throw new ReqError(errorCode.INVALID_USER, { message: "Email atau password salah" }, 401);
+  if (!isPasswordMatch) throw new ReqError(errorCode.INVALID_USER, "Email atau password salah", { flag: "email or password" }, 401);
 
   const payload = {
     username: user.username,
@@ -28,7 +29,7 @@ async function login(req, res) {
   };
 
   const token = jwt.sign(payload, process.env.JWT_SECRET, { expiresIn: process.env.JWT_EXPIRES_IN });
-  res.status(202).json({ message: "Login berhasil", data: { token } });
+  res.status(202).json(APISuccess("Login berhasil", { token }));
 }
 
 async function authorize(req, res, next) {

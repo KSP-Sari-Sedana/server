@@ -5,16 +5,17 @@ import errorCode from "../constants/errorCode.js";
 import { ReqError } from "../helpers/appError.js";
 import validate from "../helpers/validator.js";
 import schema from "../helpers/schema.js";
+import { APISuccess } from "../helpers/response.js";
 
 async function get(req, res) {
   const products = await productRepository.findAll();
-  res.status(200).json({ message: "Sukses mendapatkan semua produk", data: { products } });
+  res.status(200).json(APISuccess("Berhasil mendapatkan produk", { products }));
 }
 
 async function create(req, res) {
   const { role, status } = req.user;
   if (role !== "Admin" || status !== "Aktif") {
-    throw new ReqError(errorCode.NOT_ADMIN, { message: "Anda tidak memiliki akses untuk membuat produk" }, 403);
+    throw new ReqError(errorCode.NOT_ADMIN, "Anda tidak memiliki akses untuk membuat produk", { flag: "role or status" }, 403);
   }
 
   let { namaProduk, fotoProduk, deskripsiProduk, bungaProduk, tipeProduk, setoranProduk, tenorProduk, angsuranProduk } = req.body;
@@ -29,7 +30,7 @@ async function create(req, res) {
 
   const ext = fotoProduk.split(";")[0].match(/png|jpg|jpeg|svg/gi)?.[0];
   if (ext === undefined) {
-    throw new ReqError(errorCode.INVALID_FILE, { message: "File yang diupload tidak valid" }, 400);
+    throw new ReqError(errorCode.INVALID_FILE, "File yang diupload tidak valid", { flag: "extension" }, 400);
   }
 
   const base64 = fotoProduk.split(",")[1];
@@ -40,7 +41,7 @@ async function create(req, res) {
 
   const { insertId } = await productRepository.create(namaProduk, filePath, deskripsiProduk, bungaProduk, tipeProduk, setoranProduk, tenorProduk, angsuranProduk);
   const product = await productRepository.findById(insertId);
-  res.status(201).json({ message: "Suskes membuat produk", data: { product } });
+  res.status(201).json(APISuccess("Berhasil membuat produk", { product }));
 }
 
 async function calculate(req, res) {
@@ -48,38 +49,38 @@ async function calculate(req, res) {
 
   const product = await productRepository.findById(req.params.id);
   if (product === undefined) {
-    throw new ReqError(errorCode.RESOURCE_NOT_FOUND, { message: "Produk tidak ditemukan" }, 404);
+    throw new ReqError(errorCode.RESOURCE_NOT_FOUND, "Produk tidak ditemukan", { flag: "product" }, 404);
   }
 
   if (product.tipe === "Simpanan") {
     if (tenorProduk === undefined) {
-      throw new ReqError(errorCode.INVALID_TENOR, { message: "Tenor tidak boleh kosong" }, 400);
+      throw new ReqError(errorCode.INVALID_TENOR, "Tenor tidak boleh kosong", { flag: "tenor" }, 400);
     } else if (angsuranProduk === undefined) {
-      throw new ReqError(errorCode.INVALID_PAYMENT, { message: "Angsuran tidak boleh kosong" }, 400);
+      throw new ReqError(errorCode.INVALID_PAYMENT, "Angsuran tidak boleh kosong", { flag: "angsuran" }, 400);
     }
   } else if (product.tipe === "Pinjaman") {
     if (danaPinjaman === undefined) {
-      throw new ReqError(errorCode.INVALID_LOAN, { message: "Dana pinjaman tidak boleh kosong" }, 400);
+      throw new ReqError(errorCode.INVALID_LOAN, "Dana pinjaman tidak boleh kosong", { flag: "loan" }, 400);
     } else if (tenorProduk === undefined) {
-      throw new ReqError(errorCode.INVALID_TENOR, { message: "Tenor tidak boleh kosong" }, 400);
+      throw new ReqError(errorCode.INVALID_TENOR, "Tenor tidak boleh kosong", { flag: "tenor" }, 400);
     } else if (jenisBunga === undefined) {
-      throw new ReqError(errorCode.INVALID_INTEREST, { message: "Jenis bunga pinjaman tidak boleh kosong" }, 400);
+      throw new ReqError(errorCode.INVALID_INTEREST, "Jenis bunga pinjaman tidak boleh kosong", { flag: "interest" }, 400);
     } else if (jenisBunga !== "Menurun" && jenisBunga !== "Tetap") {
-      throw new ReqError(errorCode.INVALID_INTEREST, { message: "Pilihan jenis bunga menurun atau tetap" }, 400);
+      throw new ReqError(errorCode.INVALID_INTEREST, "Pilihan jenis bunga menurun atau tetap", { flag: "interest" }, 400);
     }
   }
 
   if (product?.tenor?.length > 0) {
     const tenor = product.tenor.filter((tenor) => tenor === tenorProduk);
     if (tenor.length === 0) {
-      throw new ReqError(errorCode.INVALID_TENOR, { message: "Tenor tidak tersedia" }, 400);
+      throw new ReqError(errorCode.INVALID_TENOR, "Tenor tidak tersedia", { flag: "tenor" }, 400);
     }
   }
 
   if (product?.angsuran?.length > 0) {
     const tenor = product.angsuran.filter((angsuran) => angsuran === angsuranProduk);
     if (tenor.length === 0) {
-      throw new ReqError(errorCode.INVALID_PAYMENT, { message: "Angsuran tidak tersedia" }, 400);
+      throw new ReqError(errorCode.INVALID_PAYMENT, "Angsuran tidak tersedia", { flag: "angsuran" }, 400);
     }
   }
 
@@ -97,7 +98,7 @@ async function calculate(req, res) {
       bunga = (product.bunga / 100) * total;
       profit = total + bunga;
     }
-    res.status(200).json({ statusCode: 200, message: "Sukses melakukan kalkulasi", data: { total, bunga, profit } });
+    res.status(200).json(APISuccess("Sukses melakukan kalkulasi", { total, bunga, profit }));
     return;
   } else if (product.tipe === "Pinjaman") {
     let pokok = 0;
@@ -151,7 +152,7 @@ async function calculate(req, res) {
 
       angsuran.push({ bunga, total, sisa });
     }
-    res.status(200).json({ statusCode: 200, message: "Sukses melakukan kalkulasi", data: { syarat, potongan, realisasi, pokok, angsuran } });
+    res.status(200).json(APISuccess("Sukses melakukan kalkulasi", { syarat, potongan, realisasi, pokok, angsuran }));
     return;
   }
 }
