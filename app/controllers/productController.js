@@ -12,6 +12,13 @@ async function get(req, res) {
   res.status(200).json(APISuccess("Berhasil mendapatkan produk", { products }));
 }
 
+async function getById(req, res) {
+  const { id } = req.params;
+  const product = await productRepository.findById(id);
+  if (!product) throw new ReqError(errorCode.NOT_FOUND, "Produk tidak ditemukan", { flag: "id" }, 404);
+  res.status(200).json(APISuccess("Berhasil mendapatkan produk", { product }));
+}
+
 async function create(req, res) {
   const { role, status } = req.user;
   if (role !== "Admin" || status !== "Aktif") {
@@ -157,4 +164,4 @@ async function calculate(req, res) {
   }
 }
 
-export default { get, create, calculate };
+export default { get, getById, create, calculate };
