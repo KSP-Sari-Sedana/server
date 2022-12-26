@@ -63,7 +63,7 @@ async function calculate(req, res) {
     if (tenorProduk === undefined) {
       throw new ReqError(errorCode.INVALID_TENOR, "Tenor tidak boleh kosong", { flag: "tenor" }, 400);
     } else if (angsuranProduk === undefined) {
-      throw new ReqError(errorCode.INVALID_PAYMENT, "Angsuran tidak boleh kosong", { flag: "angsuran" }, 400);
+      throw new ReqError(errorCode.INVALID_INSTALLMENT, "Angsuran tidak boleh kosong", { flag: "angsuran" }, 400);
     }
   } else if (product.type === "Pinjaman") {
     if (danaPinjaman === undefined) {
@@ -87,7 +87,7 @@ async function calculate(req, res) {
   if (product?.angsuran?.length > 0) {
     const tenor = product.installment.filter((angsuran) => angsuran === angsuranProduk);
     if (tenor.length === 0) {
-      throw new ReqError(errorCode.INVALID_PAYMENT, "Angsuran tidak tersedia", { flag: "angsuran" }, 400);
+      throw new ReqError(errorCode.INVALID_INSTALLMENT, "Angsuran tidak tersedia", { flag: "angsuran" }, 400);
     }
   }
 
