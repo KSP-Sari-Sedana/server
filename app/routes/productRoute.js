@@ -8,6 +8,6 @@ import tryCatch from "../utils/tryCatch.js";
 router.get("/", tryCatch(productController.get));
 router.post("/", tryCatch(authController.authorize), tryCatch(productController.create));
 router.get("/:id", tryCatch(productController.getById));
-router.post("/:id/calculate", tryCatch(productController.calculate));
+router.post("/:id/calc", tryCatch(productController.calculate));
 
 export default router;
