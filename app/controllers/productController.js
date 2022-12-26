@@ -59,13 +59,13 @@ async function calculate(req, res) {
     throw new ReqError(errorCode.RESOURCE_NOT_FOUND, "Produk tidak ditemukan", { flag: "product" }, 404);
   }
 
-  if (product.tipe === "Simpanan") {
+  if (product.type === "Simpanan") {
     if (tenorProduk === undefined) {
       throw new ReqError(errorCode.INVALID_TENOR, "Tenor tidak boleh kosong", { flag: "tenor" }, 400);
     } else if (angsuranProduk === undefined) {
       throw new ReqError(errorCode.INVALID_PAYMENT, "Angsuran tidak boleh kosong", { flag: "angsuran" }, 400);
     }
-  } else if (product.tipe === "Pinjaman") {
+  } else if (product.type === "Pinjaman") {
     if (danaPinjaman === undefined) {
       throw new ReqError(errorCode.INVALID_LOAN, "Dana pinjaman tidak boleh kosong", { flag: "loan" }, 400);
     } else if (tenorProduk === undefined) {
@@ -85,7 +85,7 @@ async function calculate(req, res) {
   }
 
   if (product?.angsuran?.length > 0) {
-    const tenor = product.angsuran.filter((angsuran) => angsuran === angsuranProduk);
+    const tenor = product.installment.filter((angsuran) => angsuran === angsuranProduk);
     if (tenor.length === 0) {
       throw new ReqError(errorCode.INVALID_PAYMENT, "Angsuran tidak tersedia", { flag: "angsuran" }, 400);
     }
@@ -95,19 +95,19 @@ async function calculate(req, res) {
   let profit = 0;
   let total = 0;
 
-  if (product.tipe === "Simpanan") {
-    if (product.setoran === "Bulanan") {
+  if (product.type === "Simpanan") {
+    if (product.deposit === "Bulanan") {
       total = angsuranProduk * tenorProduk;
-      bunga = (product.bunga / 100) * total;
+      bunga = (product.interest / 100) * total;
       profit = total + bunga * (tenorProduk / 12);
-    } else if (product.setoran === "Harian") {
+    } else if (product.deposit === "Harian") {
       total = angsuranProduk * (tenorProduk * 30);
-      bunga = (product.bunga / 100) * total;
+      bunga = (product.interest / 100) * total;
       profit = total + bunga;
     }
     res.status(200).json(APISuccess("Sukses melakukan kalkulasi", { total, bunga, profit }));
     return;
-  } else if (product.tipe === "Pinjaman") {
+  } else if (product.type === "Pinjaman") {
     let pokok = 0;
     let angsuran = [];
 
@@ -153,7 +153,7 @@ async function calculate(req, res) {
 
     for (let i = 1; i <= tenorProduk; i++) {
       pokok = 100 * Math.ceil(Math.floor(danaPinjaman / tenorProduk) / 100);
-      bunga = 100 * Math.ceil(Math.floor(jenisBunga === "Menurun" ? sisa * (product.bunga / 100) : danaPinjaman * (product.bunga / 100)) / 100);
+      bunga = 100 * Math.ceil(Math.floor(jenisBunga === "Menurun" ? sisa * (product.interest / 100) : danaPinjaman * (product.interest / 100)) / 100);
       sisa = Number(sisa - pokok);
       total = Number(pokok + bunga);
 
