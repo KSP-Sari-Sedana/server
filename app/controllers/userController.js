@@ -8,12 +8,12 @@ import schema from "../helpers/schema.js";
 import { APISuccess } from "../helpers/response.js";
 
 async function register(req, res) {
-  let { username, namaDepan, namaBelakang, email, password } = req.body;
+  let { username, firstName, lastName, email, password } = req.body;
 
   validate(schema.username, { username });
   validate(schema.email, { email });
-  validate(schema.namaDepan, { namaDepan });
-  validate(schema.namaBelakang, { namaBelakang });
+  validate(schema.firstName, { firstName });
+  validate(schema.lastName, { lastName });
   validate(schema.password, { password });
 
   const isUsername = await userRepository.findAvailableCredential("username", username);

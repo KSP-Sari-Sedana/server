@@ -27,8 +27,8 @@ const email = Joi.object({
   "object.unknown": "Terdapat field yang tidak diperbolehkan",
 });
 
-const namaDepan = Joi.object({
-  namaDepan: Joi.string()
+const firstName = Joi.object({
+  firstName: Joi.string()
     .min(3)
     .max(20)
     .required()
@@ -44,8 +44,8 @@ const namaDepan = Joi.object({
   "object.unknown": "Terdapat field yang tidak diperbolehkan",
 });
 
-const namaBelakang = Joi.object({
-  namaBelakang: Joi.string()
+const lastName = Joi.object({
+  lastName: Joi.string()
     .min(3)
     .max(20)
     .required()
@@ -139,8 +139,8 @@ const productInstallment = Joi.object({
 export default {
   username,
   email,
-  namaDepan,
-  namaBelakang,
+  firstName,
+  lastName,
   password,
   productName,
   productDescription,
