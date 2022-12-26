@@ -25,28 +25,28 @@ async function create(req, res) {
     throw new ReqError(errorCode.NOT_ADMIN, "Anda tidak memiliki akses untuk membuat produk", { flag: "role or status" }, 403);
   }
 
-  let { namaProduk, fotoProduk, deskripsiProduk, bungaProduk, tipeProduk, setoranProduk, tenorProduk, angsuranProduk } = req.body;
+  let { name, image, description, interest, type, deposit, tenor, installment } = req.body;
 
-  validate(schema.namaProduk, { namaProduk });
-  validate(schema.deskripsiProduk, { deskripsiProduk });
-  validate(schema.bungaProduk, { bungaProduk });
-  validate(schema.tipeProduk, { tipeProduk });
-  validate(schema.setoranProduk, { setoranProduk });
-  validate(schema.tenorProduk, { tenorProduk });
-  validate(schema.angsuranProduk, { angsuranProduk });
+  validate(schema.productName, { productName: name });
+  validate(schema.productDescription, { productDescription: description });
+  validate(schema.productInterest, { productInterest: interest });
+  validate(schema.productType, { productType: type });
+  validate(schema.productDeposit, { productDeposit: deposit });
+  validate(schema.productTenor, { productTenor: tenor });
+  validate(schema.productInstallment, { productInstallment: installment });
 
-  const ext = fotoProduk.split(";")[0].match(/png|jpg|jpeg|svg/gi)?.[0];
+  const ext = image.split(";")[0].match(/png|jpg|jpeg|svg/gi)?.[0];
   if (ext === undefined) {
     throw new ReqError(errorCode.INVALID_FILE, "File yang diupload tidak valid", { flag: "extension" }, 400);
   }
 
-  const base64 = fotoProduk.split(",")[1];
+  const base64 = image.split(",")[1];
   const buffer = Buffer.from(base64, "base64");
-  const fileName = `${new Date().toISOString().split("T")[0].replace(/-/gim, "")}_${namaProduk.toString().toLowerCase().replace(/(\s)/g, "-")}.${ext}`;
+  const fileName = `${new Date().toISOString().split("T")[0].replace(/-/gim, "")}_${name.toString().toLowerCase().replace(/(\s)/g, "-")}.${ext}`;
   const filePath = `images/product/${fileName}`;
   fs.writeFileSync(`./public/${filePath}`, buffer);
 
-  const { insertId } = await productRepository.create(namaProduk, filePath, deskripsiProduk, bungaProduk, tipeProduk, setoranProduk, tenorProduk, angsuranProduk);
+  const { insertId } = await productRepository.create(name, filePath, description, interest, type, deposit, tenor, installment);
   const product = await productRepository.findById(insertId);
   res.status(201).json(APISuccess("Berhasil membuat produk", { product }));
 }
