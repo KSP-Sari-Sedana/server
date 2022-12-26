@@ -52,7 +52,7 @@ async function create(req, res) {
 }
 
 async function calculate(req, res) {
-  const { tenorProduk, angsuranProduk, danaPinjaman, jenisBunga } = req.body;
+  const { tenor, installment, loanFund, interestType } = req.body;
 
   const product = await productRepository.findById(req.params.id);
   if (product === undefined) {
@@ -60,106 +60,105 @@ async function calculate(req, res) {
   }
 
   if (product.type === "Simpanan") {
-    if (tenorProduk === undefined) {
+    if (tenor === undefined) {
       throw new ReqError(errorCode.INVALID_TENOR, "Tenor tidak boleh kosong", { flag: "tenor" }, 400);
-    } else if (angsuranProduk === undefined) {
-      throw new ReqError(errorCode.INVALID_INSTALLMENT, "Angsuran tidak boleh kosong", { flag: "angsuran" }, 400);
+    } else if (installment === undefined) {
+      throw new ReqError(errorCode.INVALID_INSTALLMENT, "Angsuran tidak boleh kosong", { flag: "installment" }, 400);
     }
   } else if (product.type === "Pinjaman") {
-    if (danaPinjaman === undefined) {
+    if (loanFund === undefined) {
       throw new ReqError(errorCode.INVALID_LOAN, "Dana pinjaman tidak boleh kosong", { flag: "loan" }, 400);
-    } else if (tenorProduk === undefined) {
+    } else if (tenor === undefined) {
       throw new ReqError(errorCode.INVALID_TENOR, "Tenor tidak boleh kosong", { flag: "tenor" }, 400);
-    } else if (jenisBunga === undefined) {
+    } else if (interestType === undefined) {
       throw new ReqError(errorCode.INVALID_INTEREST, "Jenis bunga pinjaman tidak boleh kosong", { flag: "interest" }, 400);
-    } else if (jenisBunga !== "Menurun" && jenisBunga !== "Tetap") {
+    } else if (interestType !== "Menurun" && interestType !== "Tetap") {
       throw new ReqError(errorCode.INVALID_INTEREST, "Pilihan jenis bunga menurun atau tetap", { flag: "interest" }, 400);
     }
   }
 
-  if (product?.tenor?.length > 0) {
-    const tenor = product.tenor.filter((tenor) => tenor === tenorProduk);
-    if (tenor.length === 0) {
+  if (product.tenor.length > 0) {
+    const result = product.tenor.filter((number) => number === tenor);
+    if (result.length === 0) {
       throw new ReqError(errorCode.INVALID_TENOR, "Tenor tidak tersedia", { flag: "tenor" }, 400);
     }
   }
 
-  if (product?.angsuran?.length > 0) {
-    const tenor = product.installment.filter((angsuran) => angsuran === angsuranProduk);
-    if (tenor.length === 0) {
-      throw new ReqError(errorCode.INVALID_INSTALLMENT, "Angsuran tidak tersedia", { flag: "angsuran" }, 400);
+  if (product.installment.length > 0) {
+    const result = product.installment.filter((number) => number === installment);
+    if (result.length === 0) {
+      throw new ReqError(errorCode.INVALID_INSTALLMENT, "Angsuran tidak tersedia", { flag: "installment" }, 400);
     }
   }
 
-  let bunga = 0;
+  let interest = 0;
   let profit = 0;
   let total = 0;
 
   if (product.type === "Simpanan") {
     if (product.deposit === "Bulanan") {
-      total = angsuranProduk * tenorProduk;
-      bunga = (product.interest / 100) * total;
-      profit = total + bunga * (tenorProduk / 12);
+      total = installment * tenor;
+      interest = (product.interest / 100) * total;
+      profit = total + interest * (tenor / 12);
     } else if (product.deposit === "Harian") {
-      total = angsuranProduk * (tenorProduk * 30);
-      bunga = (product.interest / 100) * total;
-      profit = total + bunga;
+      total = installment * (tenor * 30);
+      interest = (product.interest / 100) * total;
+      profit = total + interest;
     }
-    res.status(200).json(APISuccess("Sukses melakukan kalkulasi", { total, bunga, profit }));
+    res.status(200).json(APISuccess("Sukses melakukan kalkulasi", { total, interest, profit }));
     return;
   } else if (product.type === "Pinjaman") {
-    let pokok = 0;
-    let angsuran = [];
+    let principal = 0;
+    let installment = [];
 
-    let administrasi = 0;
-    let asuransi = (1 / 100) * danaPinjaman;
-    let provisi = 0;
-    let simpanan = (0.5 / 100) * danaPinjaman;
-    let notaris = 0;
-    let pengecekan = 300000;
-    let roya = 150000;
-    let materai = 30000;
+    let administrative = 0;
+    let insurance = (1 / 100) * loanFund;
+    let provision = 0;
+    let mandatorySavings = (0.5 / 100) * loanFund;
+    let notary = 0;
+    let checkingFee = 300000;
+    let stampDuty = 30000;
 
-    if (danaPinjaman <= 5000000) {
-      administrasi = (3 / 100) * danaPinjaman;
-      provisi = (1 / 100) * danaPinjaman;
-      notaris = 1200000;
-    } else if (danaPinjaman <= 25000000) {
-      administrasi = (3 / 100) * danaPinjaman;
-      provisi = (1 / 100) * danaPinjaman;
-      notaris = 1200000;
-    } else if (danaPinjaman <= 50000000) {
-      administrasi = (3 / 100) * danaPinjaman;
-      provisi = (1 / 100) * danaPinjaman;
-      notaris = 1300000;
-    } else if (danaPinjaman <= 100000000) {
-      administrasi = (2.75 / 100) * danaPinjaman;
-      provisi = (1 / 100) * danaPinjaman;
-      notaris = 1500000;
-    } else if (danaPinjaman <= 150000000) {
-      administrasi = (2.3 / 100) * danaPinjaman;
-      provisi = (1 / 100) * danaPinjaman;
-      notaris = 1500000;
-    } else if (danaPinjaman >= 150000000) {
-      administrasi = (1.95 / 100) * danaPinjaman;
-      provisi = (0.5 / 100) * danaPinjaman;
-      notaris = 1500000;
+    if (loanFund <= 5000000) {
+      administrative = (3 / 100) * loanFund;
+      provision = (1 / 100) * loanFund;
+      notary = 1200000;
+    } else if (loanFund <= 25000000) {
+      administrative = (3 / 100) * loanFund;
+      provision = (1 / 100) * loanFund;
+      notary = 1200000;
+    } else if (loanFund <= 50000000) {
+      administrative = (3 / 100) * loanFund;
+      provision = (1 / 100) * loanFund;
+      notary = 1300000;
+    } else if (loanFund <= 100000000) {
+      administrative = (2.75 / 100) * loanFund;
+      provision = (1 / 100) * loanFund;
+      notary = 1500000;
+    } else if (loanFund <= 150000000) {
+      administrative = (2.3 / 100) * loanFund;
+      provision = (1 / 100) * loanFund;
+      notary = 1500000;
+    } else if (loanFund >= 150000000) {
+      administrative = (1.95 / 100) * loanFund;
+      provision = (0.5 / 100) * loanFund;
+      notary = 1500000;
     }
 
-    let sisa = danaPinjaman;
-    let realisasi = danaPinjaman - (administrasi + asuransi + provisi + simpanan + notaris + pengecekan + roya + materai);
-    let potongan = administrasi + asuransi + provisi + simpanan + notaris + pengecekan + roya + materai;
-    const syarat = { administrasi, asuransi, provisi, simpanan, notaris, pengecekan, roya, materai };
+    let loanBalance = loanFund;
+    let receivedAmount = loanFund - (administrative + insurance + provision + mandatorySavings + notary + checkingFee + stampDuty);
+    let deductionAmount = administrative + insurance + provision + mandatorySavings + notary + checkingFee + stampDuty;
+    const terms = { administrative, insurance, provision, mandatorySavings, notary, checkingFee, stampDuty };
 
-    for (let i = 1; i <= tenorProduk; i++) {
-      pokok = 100 * Math.ceil(Math.floor(danaPinjaman / tenorProduk) / 100);
-      bunga = 100 * Math.ceil(Math.floor(jenisBunga === "Menurun" ? sisa * (product.interest / 100) : danaPinjaman * (product.interest / 100)) / 100);
-      sisa = Number(sisa - pokok);
-      total = Number(pokok + bunga);
+    for (let i = 1; i <= tenor; i++) {
+      principal = 100 * Math.ceil(Math.floor(loanFund / tenor) / 100);
+      interest = 100 * Math.ceil(Math.floor(interestType === "Menurun" ? loanBalance * (product.interest / 100) : loanFund * (product.interest / 100)) / 100);
+      loanBalance = Number(loanBalance - principal);
+      total = Number(principal + interest);
 
-      angsuran.push({ bunga, total, sisa });
+      installment.push({ principal, interest, total, loanBalance });
     }
-    res.status(200).json(APISuccess("Sukses melakukan kalkulasi", { syarat, potongan, realisasi, pokok, angsuran }));
+    res.status(200).json(APISuccess("Sukses melakukan kalkulasi", { terms, deductionAmount, receivedAmount, installment }));
     return;
   }
 }
