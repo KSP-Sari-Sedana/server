@@ -1,4 +1,5 @@
 import fs from "fs";
+import("dotenv/config");
 
 import productRepository from "../repositories/productRepository.js";
 import errorCode from "../constants/errorCode.js";
@@ -46,7 +47,7 @@ async function create(req, res) {
   const filePath = `images/product/${fileName}`;
   fs.writeFileSync(`./public/${filePath}`, buffer);
 
-  const { insertId } = await productRepository.create(name, filePath, description, interest, type, deposit, tenor, installment);
+  const { insertId } = await productRepository.create(name, `${process.env.URL}/${filePath}`, description, interest, type, deposit, tenor, installment);
   const product = await productRepository.findById(insertId);
   res.status(201).json(APISuccess("Berhasil membuat produk", { product }));
 }
