@@ -67,8 +67,10 @@ async function calculate(req, res) {
       throw new ReqError(errorCode.INVALID_INSTALLMENT, "Angsuran tidak boleh kosong", { flag: "installment" }, 400);
     }
   } else if (product.type === "Pinjaman") {
-    if (loanFund === undefined) {
+    if (loanFund === undefined || loanFund === 0) {
       throw new ReqError(errorCode.INVALID_LOAN, "Dana pinjaman tidak boleh kosong", { flag: "loan" }, 400);
+    } else if (loanFund < 5000000) {
+      throw new ReqError(errorCode.INVALID_LOAN, "Dana pinjaman minimal Rp 5.000.000", { flag: "loan" }, 400);
     } else if (tenor === undefined) {
       throw new ReqError(errorCode.INVALID_TENOR, "Tenor tidak boleh kosong", { flag: "tenor" }, 400);
     } else if (interestType === undefined) {
