@@ -27,10 +27,10 @@ async function register(req, res) {
 
   const salt = await bcrypt.genSalt(10);
   const hashedPassword = await bcrypt.hash(password, salt);
-  namaDepan = namaDepan[0].toUpperCase() + namaDepan.slice(1);
-  namaBelakang = namaBelakang[0].toUpperCase() + namaBelakang.slice(1);
+  firstName = firstName[0].toUpperCase() + firstName.slice(1);
+  lastName = lastName[0].toUpperCase() + lastName.slice(1);
 
-  const user = await userRepository.create(username, namaDepan, namaBelakang, email, hashedPassword);
+  const user = await userRepository.create(username, firstName, lastName, email, hashedPassword);
 
   res.status(201).json(APISuccess("Registrasi berhasil", { user }));
 }
@@ -58,7 +58,7 @@ async function myIdentity(req, res) {
   const user = await userRepository.findByCredential("username", username);
   if (!user) throw new ReqError(errorCode.RESOURCE_NOT_FOUND, "User tidak ditemukan", { flag: "username" }, 404);
 
-  delete user?.password;
+  delete user.password;
 
   res.status(200).json(APISuccess("Sukses mendapatkan data diri", { user }));
 }
