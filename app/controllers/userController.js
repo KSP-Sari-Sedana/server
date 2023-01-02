@@ -52,7 +52,7 @@ async function getByUsername(req, res) {
   res.status(200).json(APISuccess("Sukses mendapatkan user", { user }));
 }
 
-async function myIdentity(req, res) {
+async function getMyProfile(req, res) {
   const { username } = req.user;
 
   const user = await userRepository.findByCredential("username", username);
@@ -63,4 +63,4 @@ async function myIdentity(req, res) {
   res.status(200).json(APISuccess("Sukses mendapatkan data diri", { user }));
 }
 
-export default { register, getByUsername, myIdentity };
+export default { register, getByUsername, getMyProfile };

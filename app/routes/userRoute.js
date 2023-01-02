@@ -6,7 +6,7 @@ import authController from "../controllers/authController.js";
 import tryCatch from "../utils/tryCatch.js";
 
 router.post("/", tryCatch(userController.register));
-router.get("/", tryCatch(authController.authorize), tryCatch(userController.myIdentity));
+router.get("/", tryCatch(authController.authorize), tryCatch(userController.getMyProfile));
 router.get("/:username", tryCatch(authController.authorize), tryCatch(userController.getByUsername));
 
 export default router;
