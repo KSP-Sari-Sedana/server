@@ -45,4 +45,8 @@ async function authorize(req, res, next) {
   next();
 }
 
-export default { login, authorize };
+function isTokenValid(req, res) {
+  if (req.user) return res.status(200).json(APISuccess("Token valid", { user: req.user.username, role: req.user.role, status: req.user.status }));
+}
+
+export default { login, authorize, isTokenValid };
