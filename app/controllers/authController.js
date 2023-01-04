@@ -10,7 +10,7 @@ import errorCode from "../constants/errorCode.js";
 import { APISuccess } from "../helpers/response.js";
 
 async function login(req, res) {
-  const { email, password } = req.body;
+  const { email, password, isRemember } = req.body;
 
   validate(schema.email, { email });
   validate(schema.password, { password });
@@ -28,7 +28,7 @@ async function login(req, res) {
     status: user.status,
   };
 
-  const token = jwt.sign(payload, process.env.JWT_SECRET, { expiresIn: process.env.JWT_EXPIRES_IN });
+  const token = jwt.sign(payload, process.env.JWT_SECRET, { expiresIn: isRemember ? process.env.JWT_REMEMBER_ME_EXPIRES_IN : process.env.JWT_NOT_REMEMBER_ME_EXPIRES_IN });
   res.status(202).json(APISuccess("Login berhasil", { token }));
 }
 
