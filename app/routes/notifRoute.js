@@ -6,5 +6,6 @@ import notifController from "../controllers/notifController.js";
 import tryCatch from "../utils/tryCatch.js";
 
 router.get("/", tryCatch(authController.authorize), tryCatch(notifController.get));
+router.patch("/:id", tryCatch(authController.authorize), tryCatch(notifController.markRead));
 
 export default router;
