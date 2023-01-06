@@ -7,7 +7,7 @@ async function get(req, res) {
   const user = await userRepository.findByCredential("username", username);
   if (!user) throw new APIError(errorCode.INVALID_USER, "User tidak ditemukan", 404);
 
-  const notifications = await notifRepository.getById(user.id);
+  const notifications = await notifRepository.getByUser(user.id);
   res.status(200).json(APISuccess("Notifikasi berhasil didapatkan", { notifications }));
 }
 
