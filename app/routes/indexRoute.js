@@ -6,6 +6,7 @@ import authRoute from "./authRoute.js";
 import docRoute from "./docRoute.cjs";
 import productRoute from "./productRoute.js";
 import notifRoute from "./notifRoute.js";
+import subm from "./submRoute.js";
 
 router.get("/", (req, res) => {
   res.json({ message: "server running" });
@@ -16,5 +17,6 @@ router.use("/auth", authRoute);
 router.use("/docs", docRoute);
 router.use("/products", productRoute);
 router.use("/notif", notifRoute);
+router.use("/subm", subm);
 
 export default router;
