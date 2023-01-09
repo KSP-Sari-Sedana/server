@@ -52,13 +52,15 @@ async function create(namaProduk, fotoProduk, deskripsiProduk, bungaProduk, tipe
 
 async function findConsumed(id, type) {
   let result = [];
+  let query = "";
 
   if (type === "saving") {
-    let query = `
+    query = `
       SELECT
         ksi.id,
         ksi.nomor_rekening as accNumber,
         p.nama AS productName,
+        p.tipe AS productType,
         COALESCE(SUM(asi.debet), 0) - COALESCE(SUM(asi.kredit), 0) as balance,
         ksi.tanggal_realisasi AS settleDate
       FROM pengajuan_simpanan AS psi
@@ -71,6 +73,27 @@ async function findConsumed(id, type) {
 
     const [saving] = await dbPool.execute(query, [id]);
     result = [...saving];
+  }
+
+  if (type === "loan") {
+    query = `
+      SELECT
+        kpi.id,
+        kpi.nomor_rekening as accNumber,
+        p.nama AS productName,
+        p.tipe AS productType,
+        COALESCE((ppi.dana - (kpi.administrasi + kpi.provisi + kpi.simpanan_wajib + kpi.notaris + kpi.biaya_pengecekan + kpi.materai) ) - SUM(api.bunga + api.pokok), 0) AS loanBalance,
+        kpi.tanggal_realisasi AS settleDate
+      FROM pengajuan_pinjaman AS ppi
+      JOIN kitir_pinjaman AS kpi ON ppi.id = kpi.pengajuan_pinjaman_id
+      LEFT JOIN angsuran_pinjaman AS api ON kpi.id = api.kitir_pinjaman_id
+      JOIN produk AS p ON ppi.produk_id = p.id
+      WHERE ppi.pengguna_id = ?
+      GROUP BY ppi.pengguna_id, kpi.id
+    `;
+
+    const [loan] = await dbPool.execute(query, [id]);
+    result = [...loan];
   }
 
   return result;
@@ -87,6 +110,7 @@ async function findConsumedById(id, type) {
         psi.pengguna_id AS userId,
         ksi.nomor_rekening as accNumber,
         p.nama AS productName,
+        p.tipe AS productType,
         COALESCE(SUM(asi.debet), 0) - COALESCE(SUM(asi.kredit), 0) as balance,
         ksi.tanggal_realisasi AS settleDate
       FROM pengajuan_simpanan AS psi
