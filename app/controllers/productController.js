@@ -3,8 +3,9 @@ import("dotenv/config");
 
 import productRepository from "../repositories/productRepository.js";
 import userRepository from "../repositories/userRepository.js";
+import transRepository from "../repositories/transRepository.js";
 import errorCode from "../constants/errorCode.js";
-import { ReqError } from "../helpers/appError.js";
+import { ReqError, APIError } from "../helpers/appError.js";
 import validate from "../helpers/validator.js";
 import schema from "../helpers/schema.js";
 import { APISuccess } from "../helpers/response.js";
@@ -182,4 +183,41 @@ async function getConsumedProducts(req, res) {
   res.status(200).json(APISuccess("Sukses mendapatkan data produk", { consumedProducts }));
 }
 
-export default { get, getById, create, calculate, getConsumedProducts };
+async function getConsumedProductById(req, res) {
+  const { username } = req.user;
+  const { type, id } = req.params;
+
+  if (type !== "saving" && type !== "loan") {
+    throw new ReqError(errorCode.INVALID_PRODUCT_TYPE, "Tipe produk tidak valid", { flag: "type" }, 400);
+  }
+
+  const user = await userRepository.findByCredential("username", username);
+  if (!user) throw new APIError(errorCode.INVALID_USER, "User tidak ditemukan", 404);
+
+  const consumedProduct = await productRepository.findConsumedById(id, type);
+  if (!consumedProduct) throw new APIError(errorCode.INVALID_CONSUMED_PRODUCT, "Produk tidak ditemukan", 404);
+
+  if (consumedProduct.userId !== user.id) throw new APIError(errorCode.INVALID_CONSUMED_PRODUCT, "Produk tidak ditemukan", 404);
+
+  const transDetail = await transRepository.findTransById(id, type);
+
+  let balance = 0;
+  for (let i = 0; i < transDetail.length; i++) {
+    const debit = transDetail[i].debit;
+    const credit = transDetail[i].credit;
+
+    if (transDetail[i].code === "Debit") {
+      balance += debit;
+    } else if (transDetail[i].code === "Kredit") {
+      balance -= credit;
+    }
+
+    transDetail[i].balance = balance;
+  }
+
+  transDetail.sort((a, b) => new Date(b.date) - new Date(a.date));
+  consumedProduct.transDetail = transDetail;
+  res.status(200).json(APISuccess("Sukses mendapatkan data angsuran produk", { consumedProduct }));
+}
+
+export default { get, getById, create, calculate, getConsumedProducts, getConsumedProductById };

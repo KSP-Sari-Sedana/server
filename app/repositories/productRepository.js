@@ -43,4 +43,31 @@ async function findConsumed(id, type) {
   return result;
 }
 
-export default { findAll, findById, create, findConsumed };
+async function findConsumedById(id, type) {
+  let result = {};
+  let query = "";
+
+  if (type === "saving") {
+    query = `
+      SELECT
+        ksi.id,
+        psi.pengguna_id AS userId,
+        ksi.nomor_rekening as accNumber,
+        p.nama AS productName,
+        COALESCE(SUM(asi.debet), 0) - COALESCE(SUM(asi.kredit), 0) as balance,
+        ksi.tanggal_realisasi AS settleDate
+      FROM pengajuan_simpanan AS psi
+      JOIN kitir_simpanan AS ksi ON psi.id = ksi.pengajuan_simpanan_id
+      LEFT JOIN angsuran_simpanan AS asi ON ksi.id = asi.kitir_simpanan_id
+      JOIN produk AS p ON psi.produk_id = p.id
+      WHERE ksi.id = ?
+      GROUP BY psi.pengguna_id, ksi.id
+    `;
+    const [saving] = await dbPool.execute(query, [id]);
+    result = saving[0];
+  }
+
+  return result;
+}
+
+export default { findAll, findById, create, findConsumed, findConsumedById };
