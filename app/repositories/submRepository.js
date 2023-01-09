@@ -78,7 +78,7 @@ async function getById(id, type) {
       FROM pengajuan_pinjaman AS pp 
       JOIN produk AS p 
       ON pp.produk_id = p.id 
-      WHERE pp.pengguna_id = ?
+      WHERE pp.id = ?
     `;
 
     const [loan] = await dbPool.execute(query, [id]);
