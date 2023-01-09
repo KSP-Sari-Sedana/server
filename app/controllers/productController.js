@@ -2,6 +2,7 @@ import fs from "fs";
 import("dotenv/config");
 
 import productRepository from "../repositories/productRepository.js";
+import userRepository from "../repositories/userRepository.js";
 import errorCode from "../constants/errorCode.js";
 import { ReqError } from "../helpers/appError.js";
 import validate from "../helpers/validator.js";
@@ -166,4 +167,19 @@ async function calculate(req, res) {
   }
 }
 
-export default { get, getById, create, calculate };
+async function getConsumedProducts(req, res) {
+  const { username } = req.user;
+  const { type } = req.params;
+
+  if (type !== "saving" && type !== "loan") {
+    throw new ReqError(errorCode.INVALID_PRODUCT_TYPE, "Tipe produk tidak valid", { flag: "type" }, 400);
+  }
+
+  const user = await userRepository.findByCredential("username", username);
+  if (!user) throw new APIError(errorCode.INVALID_USER, "User tidak ditemukan", 404);
+
+  const consumedProducts = await productRepository.findConsumed(user.id, type);
+  res.status(200).json(APISuccess("Sukses mendapatkan data produk", { consumedProducts }));
+}
+
+export default { get, getById, create, calculate, getConsumedProducts };

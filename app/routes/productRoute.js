@@ -9,5 +9,6 @@ router.get("/", tryCatch(productController.get));
 router.post("/", tryCatch(authController.authorize), tryCatch(productController.create));
 router.get("/:id", tryCatch(productController.getById));
 router.post("/:id/calc", tryCatch(productController.calculate));
+router.get("/consumed/:type", tryCatch(authController.authorize), tryCatch(productController.getConsumedProducts));
 
 export default router;
