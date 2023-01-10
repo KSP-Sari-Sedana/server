@@ -199,23 +199,42 @@ async function getConsumedProductById(req, res) {
 
   if (consumedProduct.userId !== user.id) throw new APIError(errorCode.INVALID_CONSUMED_PRODUCT, "Produk tidak ditemukan", 404);
 
-  const transDetail = await transRepository.findTransById(id, type);
+  let transDetail = undefined;
 
-  let balance = 0;
-  for (let i = 0; i < transDetail.length; i++) {
-    const debit = transDetail[i].debit;
-    const credit = transDetail[i].credit;
+  if (type === "saving") {
+    let balance = 0;
 
-    if (transDetail[i].code === "Debit") {
-      balance += debit;
-    } else if (transDetail[i].code === "Kredit") {
-      balance -= credit;
+    transDetail = await transRepository.findTransById(id, type);
+    for (let i = 0; i < transDetail.length; i++) {
+      const debit = transDetail[i].debit;
+      const credit = transDetail[i].credit;
+
+      if (transDetail[i].code === "Debit") {
+        balance += debit;
+      } else if (transDetail[i].code === "Kredit") {
+        balance -= credit;
+      }
+
+      transDetail[i].balance = balance;
     }
 
-    transDetail[i].balance = balance;
+    transDetail.sort((a, b) => new Date(b.date) - new Date(a.date));
   }
 
-  transDetail.sort((a, b) => new Date(b.date) - new Date(a.date));
+  if (type === "loan") {
+    let loanBalance = consumedProduct.loanFund;
+
+    transDetail = await transRepository.findTransById(id, type);
+
+    transDetail.forEach((transaction) => {
+      transaction.total = transaction.principal + transaction.interest + transaction.penaltyFee;
+      loanBalance -= transaction.total - transaction.penaltyFee;
+      transaction.loanBalance = loanBalance;
+    });
+
+    transDetail.sort((a, b) => new Date(b.date) - new Date(a.date));
+  }
+
   consumedProduct.transDetail = transDetail;
   res.status(200).json(APISuccess("Sukses mendapatkan data angsuran produk", { consumedProduct }));
 }

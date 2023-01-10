@@ -82,7 +82,7 @@ async function findConsumed(id, type) {
         kpi.nomor_rekening as accNumber,
         p.nama AS productName,
         p.tipe AS productType,
-        COALESCE((ppi.dana - (kpi.administrasi + kpi.provisi + kpi.simpanan_wajib + kpi.notaris + kpi.biaya_pengecekan + kpi.materai) ) - SUM(api.bunga + api.pokok), 0) AS loanBalance,
+        ppi.dana - SUM(api.bunga + api.pokok) AS loanBalance,
         kpi.tanggal_realisasi AS settleDate
       FROM pengajuan_pinjaman AS ppi
       JOIN kitir_pinjaman AS kpi ON ppi.id = kpi.pengajuan_pinjaman_id
@@ -123,6 +123,40 @@ async function findConsumedById(id, type) {
 
     const [saving] = await dbPool.execute(query, [id]);
     result = saving[0];
+  }
+
+  if (type === "loan") {
+    query = `
+      SELECT
+        kpi.id,
+        ppi.pengguna_id AS userId,
+        CONCAT(pe.nama_depan, ' ', pe.nama_belakang) AS fullName,
+        CONCAT(pe.kecamatan, ', ', pe.kabupaten) AS address,
+        pe.telepon AS cellphone,
+        ppi.tipe_bunga AS interestType,
+        ppi.tenor,
+        kpi.administrasi AS administrative,
+        kpi.provisi AS provision,
+        kpi.simpanan_wajib AS mandatorySavings,
+        kpi.nomor_rekening as accNumber,
+        pr.nama AS productName,
+        pr.tipe AS productType,
+        ppi.dana as loanFund,
+        SUM(api.bunga + api.pokok) AS totalPayment,
+        ppi.dana - SUM(api.bunga + api.pokok) AS loanBalance,
+        SUM(api.denda) AS penaltyTotal,
+        kpi.tanggal_realisasi AS settleDate
+      FROM pengajuan_pinjaman AS ppi
+      JOIN pengguna AS pe ON ppi.pengguna_id = pe.id
+      JOIN kitir_pinjaman AS kpi ON ppi.id = kpi.pengajuan_pinjaman_id
+      LEFT JOIN angsuran_pinjaman AS api ON kpi.id = api.kitir_pinjaman_id
+      JOIN produk AS pr ON ppi.produk_id = pr.id
+      WHERE kpi.id = ?
+      GROUP BY ppi.pengguna_id, kpi.id
+    `;
+
+    const [loan] = await dbPool.execute(query, [id]);
+    result = loan[0];
   }
 
   return result;
