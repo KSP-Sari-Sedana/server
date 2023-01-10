@@ -4,7 +4,7 @@ import errorCode from "../constants/errorCode.js";
 import { APIError, ReqError } from "../helpers/appError.js";
 import { APISuccess } from "../helpers/response.js";
 
-async function get(req, res) {
+async function getByUser(req, res) {
   const { username } = req.user;
   const user = await userRepository.findByCredential("username", username);
   if (!user) throw new APIError(errorCode.INVALID_USER, "User tidak ditemukan", 404);
@@ -31,4 +31,4 @@ async function getSubmById(req, res) {
   res.status(200).json(APISuccess("Pengajuan berhasil didapatkan", { subm }));
 }
 
-export default { get, getSubmById };
+export default { getByUser, getSubmById };
