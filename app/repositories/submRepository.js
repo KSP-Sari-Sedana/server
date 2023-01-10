@@ -1,5 +1,60 @@
 import dbPool from "../../config/database.js";
 
+async function findAll(type) {
+  let query = "";
+
+  if (type === "saving") {
+    query = `
+      SELECT
+        psi.id AS submId,
+        pe.id AS userId,
+        CONCAT(pe.nama_depan, ' ', pe.nama_belakang) AS fullName,
+        pe.email,
+        pe.role,
+        pe.foto AS image,
+        pr.nama AS productName,
+        pr.setoran AS deposit,
+        psi.tanggal_pengajuan AS submDate,
+        psi.angsuran AS installment,
+        psi.tenor,
+        psi.status AS status
+      FROM pengajuan_simpanan AS psi
+      JOIN pengguna AS pe ON psi.pengguna_id = pe.id
+      JOIN produk AS pr ON (psi.produk_id = pr.id)
+      ORDER BY psi.tanggal_pengajuan DESC
+    `;
+
+    const [saving] = await dbPool.execute(query);
+    return saving;
+  }
+
+  if (type === "loan") {
+    query = `
+      SELECT
+        ppi.id AS submId,
+        pe.id AS userId,
+        CONCAT(pe.nama_depan, ' ', pe.nama_belakang) AS fullName,
+        pe.email,
+        pe.role,
+        pe.foto AS image,
+        pr.nama AS productName,
+        ppi.tipe_bunga AS interestType,
+        ppi.tanggal_pengajuan AS submDate,
+        ppi.dana AS loanFund,
+        ppi.tenor,
+        ppi.jaminan AS collateral,
+        ppi.status AS status
+      FROM pengajuan_pinjaman AS ppi
+      JOIN pengguna AS pe ON ppi.pengguna_id = pe.id
+      JOIN produk AS pr ON (ppi.produk_id = pr.id)
+      ORDER BY ppi.tanggal_pengajuan DESC
+    `;
+
+    const [loan] = await dbPool.execute(query);
+    return loan;
+  }
+}
+
 async function getByUser(id) {
   let result = [];
   let query = `
@@ -88,4 +143,4 @@ async function getById(id, type) {
   return result;
 }
 
-export default { getByUser, getById };
+export default { findAll, getByUser, getById };
