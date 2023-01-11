@@ -96,44 +96,62 @@ async function getById(id, type) {
   let query = "";
   if (type === "saving") {
     query = `
-      SELECT ps.id AS submId, 
-        ps.produk_id AS productId, 
-        ps.pengguna_id AS userId, 
-        p.nama AS productName,
-        p.tipe AS productType,
-        p.setoran AS deposit,
-        ps.angsuran AS installment, 
-        ps.tenor, 
-        ps.tanggal_pengajuan AS submDate, 
-        ps.status AS status
-      FROM pengajuan_simpanan AS ps
-      JOIN produk AS p
-      ON ps.produk_id = p.id
-      WHERE ps.id = ?
+      SELECT
+        psi.id AS submId,
+        psi.produk_id AS productId,
+        psi.pengguna_id AS userId,
+        pe.username,
+        pe.nama_depan AS firstName,
+        pe.nama_belakang AS lastName,
+        pe.role,
+        pe.email,
+        pe.foto AS image,
+        pe.telepon AS cellphone,
+        pe.status AS userStatus,
+        pr.nama AS productName,
+        pr.tipe AS productType,
+        pr.setoran AS deposit,
+        psi.angsuran AS installment,
+        psi.tenor,
+        psi.tanggal_pengajuan AS submDate,
+        psi.status AS status
+      FROM pengajuan_simpanan AS psi
+      JOIN pengguna AS pe on psi.pengguna_id = pe.id
+      JOIN produk AS pr ON psi.produk_id = pr.id
+      WHERE psi.id = ?
     `;
 
     const [saving] = await dbPool.execute(query, [id]);
     result = saving[0];
   } else if (type === "loan") {
     query = `
-      SELECT  pp.id AS submId, 
-        pp.produk_id AS productId, 
-        pp.pengguna_id AS userId, 
-        p.nama AS productName,
-        p.tipe AS productType,
-        p.setoran AS deposit,
-        pp.dana AS loanFund, 
-        TRUNCATE(pp.bunga, 2) AS interest, 
-        pp.tenor, 
-        pp.tipe_bunga AS interestType, 
-        pp.jaminan AS collateral, 
-        pp.catatan AS note, 
-        pp.tanggal_pengajuan AS submDate, 
-        pp.status AS status
-      FROM pengajuan_pinjaman AS pp 
-      JOIN produk AS p 
-      ON pp.produk_id = p.id 
-      WHERE pp.id = ?
+      SELECT
+        ppi.id AS submId,
+        ppi.produk_id AS productId,
+        ppi.pengguna_id AS userId,
+        pe.username,
+        pe.nama_depan AS firstName,
+        pe.nama_belakang AS lastName,
+        pe.role,
+        pe.email,
+        pe.foto AS image,
+        pe.telepon AS cellphone,
+        pe.status AS userStatus,
+        pr.nama AS productName,
+        pr.tipe AS productType,
+        pr.setoran AS deposit,
+        ppi.dana AS loanFund,
+        TRUNCATE(ppi.bunga, 2) AS interest,
+        ppi.tenor,
+        ppi.tipe_bunga AS interestType,
+        ppi.jaminan AS collateral,
+        ppi.catatan AS note,
+        ppi.tanggal_pengajuan AS submDate,
+        ppi.status AS status
+      FROM pengajuan_pinjaman AS ppi
+      JOIN pengguna pe on ppi.pengguna_id = pe.id
+      JOIN produk AS pr ON ppi.produk_id = pr.id
+      WHERE ppi.id = ?
     `;
 
     const [loan] = await dbPool.execute(query, [id]);
