@@ -43,6 +43,8 @@ async function getSubmById(req, res) {
   const subm = await submRepository.getById(req.params.id, req.params.type);
   if (!subm) throw new ReqError(errorCode.INVALID_SUBM, "Pengajuan tidak ditemukan", { flag: "id", type: req.params.type }, 404);
 
+  if (user.role === "Admin") return res.status(200).json(APISuccess("Pengajuan berhasil didapatkan", { subm }));
+
   if (subm.userId !== user.id) throw new ReqError(errorCode.INVALID_SUBM, "Pengajuan tidak ditemukan", { flag: "id", type: req.params.type }, 404);
 
   res.status(200).json(APISuccess("Pengajuan berhasil didapatkan", { subm }));
