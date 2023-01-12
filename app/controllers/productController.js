@@ -169,17 +169,25 @@ async function calculate(req, res) {
 }
 
 async function getConsumedProducts(req, res) {
-  const { username } = req.user;
   const { type } = req.params;
+  const { username } = req.query;
 
   if (type !== "saving" && type !== "loan") {
     throw new ReqError(errorCode.INVALID_PRODUCT_TYPE, "Tipe produk tidak valid", { flag: "type" }, 400);
   }
 
-  const user = await userRepository.findByCredential("username", username);
-  if (!user) throw new APIError(errorCode.INVALID_USER, "User tidak ditemukan", 404);
+  if (username) {
+    if ((req.user.role !== "Admin" && req.user.role !== "Teller") || req.user.status !== "Aktif") throw new APIError(errorCode.RESOURCE_FORBIDDEN, "Anda tidak memiliki akses", 401);
 
-  const consumedProducts = await productRepository.findConsumed(user.id, type);
+    const user = await userRepository.findByCredential("username", username);
+    if (!user) throw new APIError(errorCode.INVALID_USER, "User tidak ditemukan", 404);
+
+    const consumedProducts = await productRepository.findConsumed(user.id, type);
+    res.status(200).json(APISuccess("Sukses mendapatkan data produk", { consumedProducts }));
+    return;
+  }
+
+  const consumedProducts = await productRepository.findConsumed(req.user.id, type);
   res.status(200).json(APISuccess("Sukses mendapatkan data produk", { consumedProducts }));
 }
 
