@@ -50,4 +50,16 @@ async function getSubmById(req, res) {
   res.status(200).json(APISuccess("Pengajuan berhasil didapatkan", { subm }));
 }
 
-export default { get, getByUser, getSubmById };
+async function cancelSubm(req, res) {
+  const { id, type } = req.params;
+
+  const subm = await submRepository.getById(id, type);
+  if (!subm) throw new ReqError(errorCode.INVALID_SUBM, "Pengajuan tidak ditemukan", { flag: "id", type }, 404);
+
+  if (subm.userId !== req.user.id) throw new ReqError(errorCode.INVALID_USER, "User tidak ditemukan", { flag: "id", type }, 404);
+
+  await submRepository.deleteById(id, type);
+  res.status(200).json(APISuccess("Sukses menghapus pengajuan", { subm }));
+}
+
+export default { get, getByUser, getSubmById, cancelSubm };

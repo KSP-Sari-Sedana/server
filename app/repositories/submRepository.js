@@ -161,4 +161,25 @@ async function getById(id, type) {
   return result;
 }
 
-export default { findAll, getByUser, getById };
+async function deleteById(id, type) {
+  let query = "";
+  let result = undefined;
+
+  if (type === "saving") {
+    query = `
+      DELETE
+      FROM pengajuan_simpanan
+      WHERE id = ?
+    `;
+  } else if (type === "loan") {
+    query = `
+      DELETE
+      FROM pengajuan_pinjaman
+      WHERE id = ?
+    `;
+  }
+  result = await dbPool.execute(query, [id]);
+  return result;
+}
+
+export default { findAll, getByUser, getById, deleteById };
