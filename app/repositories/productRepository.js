@@ -57,7 +57,7 @@ async function findConsumed(id, type) {
   if (type === "saving") {
     query = `
       SELECT
-        ksi.id,
+        ksi.id AS submId,
         ksi.nomor_rekening as accNumber,
         p.nama AS productName,
         p.tipe AS productType,
@@ -78,7 +78,7 @@ async function findConsumed(id, type) {
   if (type === "loan") {
     query = `
       SELECT
-        kpi.id,
+        kpi.id AS submId,
         kpi.nomor_rekening as accNumber,
         p.nama AS productName,
         p.tipe AS productType,
