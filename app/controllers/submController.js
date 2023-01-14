@@ -4,6 +4,20 @@ import errorCode from "../constants/errorCode.js";
 import { APIError, ReqError } from "../helpers/appError.js";
 import { APISuccess } from "../helpers/response.js";
 
+async function create(req, res) {
+  const { type } = req.params;
+  req.body.submDate = new Date();
+
+  if (type !== "saving" && type !== "loan") throw new ReqError(errorCode.INVALID_PRODUCT_TYPE, "Tipe produk tidak ditemukan", { flag: "type", type }, 404);
+
+  let subm = undefined;
+
+  subm = await submRepository.create(req.user.id, type, req.body);
+  if (!subm) throw new APIError(errorCode.INVALID_SUBM, "Pengajuan gagal dibuat", 500);
+
+  res.status(201).json(APISuccess("Pengajuan berhasil dibuat", { subm }));
+}
+
 async function get(req, res) {
   const { username } = req.user;
   const { type } = req.params;
@@ -62,4 +76,4 @@ async function cancelSubm(req, res) {
   res.status(200).json(APISuccess("Sukses menghapus pengajuan", { subm }));
 }
 
-export default { get, getByUser, getSubmById, cancelSubm };
+export default { create, get, getByUser, getSubmById, cancelSubm };

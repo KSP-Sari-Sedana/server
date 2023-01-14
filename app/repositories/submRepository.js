@@ -1,5 +1,75 @@
 import dbPool from "../../config/database.js";
 
+async function create(userId, type, subm) {
+  let query = "";
+
+  if (type === "saving") {
+    query = `
+      INSERT INTO
+        pengajuan_simpanan(produk_id, pengguna_id, angsuran, tenor, tanggal_pengajuan)
+      VALUES(?, ?, ?, ?, ?)
+    `;
+
+    const result = await dbPool.execute(query, [subm.productId, userId, subm.installment, subm.tenor, subm.submDate]);
+
+    query = `
+      SELECT
+        psi.id AS submId,
+        psi.produk_id AS productId,
+        psi.pengguna_id AS userId,
+        pe.username,
+        pr.nama AS productName,
+        pr.tipe AS productType,
+        pr.setoran AS deposit,
+        psi.angsuran AS installment,
+        psi.tenor,
+        psi.tanggal_pengajuan AS submDate,
+        psi.status AS status
+      FROM pengajuan_simpanan AS psi
+      JOIN pengguna AS pe on psi.pengguna_id = pe.id
+      JOIN produk AS pr ON psi.produk_id = pr.id
+      WHERE psi.id = ?
+    `;
+
+    const [saving] = await dbPool.execute(query, [result[0].insertId]);
+    return saving[0];
+  } else if (type === "loan") {
+    query = `
+      INSERT INTO
+        pengajuan_pinjaman(produk_id, pengguna_id, dana, bunga, tenor, tipe_bunga, jaminan, catatan, tanggal_pengajuan)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+    `;
+
+    const result = await dbPool.execute(query, [subm.productId, userId, subm.loanFund, subm.interest, subm.tenor, subm.interestType, subm.collateral, subm.note, subm.submDate]);
+
+    query = `
+      SELECT
+        ppi.id AS submId,
+        ppi.produk_id AS productId,
+        ppi.pengguna_id AS userId,
+        pe.username,
+        pr.nama AS productName,
+        pr.tipe AS productType,
+        pr.setoran AS deposit,
+        ppi.dana AS loanFund,
+        TRUNCATE(ppi.bunga, 2) AS interest,
+        ppi.tenor,
+        ppi.tipe_bunga AS interestType,
+        ppi.jaminan AS collateral,
+        ppi.catatan AS note,
+        ppi.tanggal_pengajuan AS submDate,
+        ppi.status AS status
+      FROM pengajuan_pinjaman AS ppi
+      JOIN pengguna pe on ppi.pengguna_id = pe.id
+      JOIN produk AS pr ON ppi.produk_id = pr.id
+      WHERE ppi.id = ?
+    `;
+
+    const [loan] = await dbPool.execute(query, [result[0].insertId]);
+    return loan[0];
+  }
+}
+
 async function findAll(type) {
   let query = "";
 
@@ -182,4 +252,4 @@ async function deleteById(id, type) {
   return result;
 }
 
-export default { findAll, getByUser, getById, deleteById };
+export default { create, findAll, getByUser, getById, deleteById };
