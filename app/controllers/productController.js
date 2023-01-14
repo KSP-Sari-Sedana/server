@@ -217,9 +217,9 @@ async function getConsumedProductById(req, res) {
       const debit = transDetail[i].debit;
       const credit = transDetail[i].credit;
 
-      if (transDetail[i].code === "Debit") {
+      if (transDetail[i].code === "Setoran") {
         balance += debit;
-      } else if (transDetail[i].code === "Kredit") {
+      } else if (transDetail[i].code === "Penarikan") {
         balance -= credit;
       }
 

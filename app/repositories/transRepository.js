@@ -10,8 +10,8 @@ async function findTransById(id, type) {
         asi.id,
         asi.tanggal AS date,
         asi.sandi AS code,
-        asi.debet AS debit,
-        asi.kredit AS credit
+        asi.setoran AS debit,
+        asi.penarikan AS credit
       FROM angsuran_simpanan AS asi
       JOIN kitir_simpanan AS ksi ON asi.kitir_simpanan_id = ksi.id
       JOIN pengajuan_simpanan AS ps ON ksi.pengajuan_simpanan_id = ps.id

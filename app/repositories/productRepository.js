@@ -58,10 +58,10 @@ async function findConsumed(id, type) {
     query = `
       SELECT
         ksi.id AS submId,
-        ksi.nomor_rekening as accNumber,
+        ksi.nomor_rekening AS accNumber,
         p.nama AS productName,
         p.tipe AS productType,
-        COALESCE(SUM(asi.debet), 0) - COALESCE(SUM(asi.kredit), 0) as balance,
+        COALESCE(SUM(asi.setoran), 0) - COALESCE(SUM(asi.penarikan), 0) AS balance,
         ksi.tanggal_realisasi AS settleDate
       FROM pengajuan_simpanan AS psi
       JOIN kitir_simpanan AS ksi ON psi.id = ksi.pengajuan_simpanan_id
@@ -79,7 +79,7 @@ async function findConsumed(id, type) {
     query = `
       SELECT
         kpi.id AS submId,
-        kpi.nomor_rekening as accNumber,
+        kpi.nomor_rekening AS accNumber,
         p.nama AS productName,
         p.tipe AS productType,
         ppi.dana - COALESCE(SUM(api.bunga + api.pokok), 0) AS loanBalance,
@@ -108,10 +108,10 @@ async function findConsumedById(id, type) {
       SELECT
         ksi.id,
         psi.pengguna_id AS userId,
-        ksi.nomor_rekening as accNumber,
+        ksi.nomor_rekening AS accNumber,
         p.nama AS productName,
         p.tipe AS productType,
-        COALESCE(SUM(asi.debet), 0) - COALESCE(SUM(asi.kredit), 0) as balance,
+        COALESCE(SUM(asi.setoran), 0) - COALESCE(SUM(asi.penarikan), 0) AS balance,
         ksi.tanggal_realisasi AS settleDate
       FROM pengajuan_simpanan AS psi
       JOIN kitir_simpanan AS ksi ON psi.id = ksi.pengajuan_simpanan_id
@@ -138,10 +138,10 @@ async function findConsumedById(id, type) {
         kpi.administrasi AS administrative,
         kpi.provisi AS provision,
         kpi.simpanan_wajib AS mandatorySavings,
-        kpi.nomor_rekening as accNumber,
+        kpi.nomor_rekening AS accNumber,
         pr.nama AS productName,
         pr.tipe AS productType,
-        ppi.dana as loanFund,
+        ppi.dana AS loanFund,
         COALESCE(SUM(api.bunga + api.pokok), 0) AS totalPayment,
         ppi.dana - COALESCE(SUM(api.bunga + api.pokok), 0) AS loanBalance,
         COALESCE(SUM(api.denda), 0) AS penaltyTotal,
