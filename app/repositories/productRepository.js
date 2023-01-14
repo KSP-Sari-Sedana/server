@@ -82,7 +82,7 @@ async function findConsumed(id, type) {
         kpi.nomor_rekening as accNumber,
         p.nama AS productName,
         p.tipe AS productType,
-        ppi.dana - SUM(api.bunga + api.pokok) AS loanBalance,
+        ppi.dana - COALESCE(SUM(api.bunga + api.pokok), 0) AS loanBalance,
         kpi.tanggal_realisasi AS settleDate
       FROM pengajuan_pinjaman AS ppi
       JOIN kitir_pinjaman AS kpi ON ppi.id = kpi.pengajuan_pinjaman_id
@@ -142,9 +142,9 @@ async function findConsumedById(id, type) {
         pr.nama AS productName,
         pr.tipe AS productType,
         ppi.dana as loanFund,
-        SUM(api.bunga + api.pokok) AS totalPayment,
-        ppi.dana - SUM(api.bunga + api.pokok) AS loanBalance,
-        SUM(api.denda) AS penaltyTotal,
+        COALESCE(SUM(api.bunga + api.pokok), 0) AS totalPayment,
+        ppi.dana - COALESCE(SUM(api.bunga + api.pokok), 0) AS loanBalance,
+        COALESCE(SUM(api.denda), 0) AS penaltyTotal,
         kpi.tanggal_realisasi AS settleDate
       FROM pengajuan_pinjaman AS ppi
       JOIN pengguna AS pe ON ppi.pengguna_id = pe.id
