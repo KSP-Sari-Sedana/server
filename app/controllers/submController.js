@@ -1,5 +1,6 @@
 import submRepository from "../repositories/submRepository.js";
 import userRepository from "../repositories/userRepository.js";
+import accRepository from "../repositories/accRepository.js";
 import errorCode from "../constants/errorCode.js";
 import { APIError, ReqError } from "../helpers/appError.js";
 import { APISuccess } from "../helpers/response.js";
@@ -64,6 +65,80 @@ async function getSubmById(req, res) {
   res.status(200).json(APISuccess("Pengajuan berhasil didapatkan", { subm }));
 }
 
+async function update(req, res) {
+  const { id, type } = req.params;
+
+  if (req.user.role !== "Admin") throw new ReqError(errorCode.INVALID_USER, "User tidak ditemukan", { flag: "id", type }, 404);
+
+  let subm = await submRepository.getById(id, type);
+  if (!subm) throw new ReqError(errorCode.INVALID_SUBM, "Pengajuan tidak ditemukan", { flag: "id", type }, 404);
+
+  if (subm.status === "Diterima") throw new ReqError(errorCode.INVALID_SUBM, "Pengajuan sudah diterima", { flag: "id", type }, 404);
+
+  if (req.body.status === "Diterima") {
+    if (type === "saving") {
+      let payload = {
+        realDate: new Date(),
+      };
+
+      await accRepository.create(subm.submId, type, payload);
+    }
+
+    if (type === "loan") {
+      let administrative = 0;
+      let insurance = (1 / 100) * subm.loanFund;
+      let provision = 0;
+      let mandatorySavings = (0.5 / 100) * subm.loanFund;
+      let notary = 0;
+      let checkingFee = 300000;
+      let stampDuty = 30000;
+
+      if (subm.loanFund <= 5000000) {
+        administrative = (3 / 100) * subm.loanFund;
+        provision = (1 / 100) * subm.loanFund;
+        notary = 1200000;
+      } else if (subm.loanFund <= 25000000) {
+        administrative = (3 / 100) * subm.loanFund;
+        provision = (1 / 100) * subm.loanFund;
+        notary = 1200000;
+      } else if (subm.loanFund <= 50000000) {
+        administrative = (3 / 100) * subm.loanFund;
+        provision = (1 / 100) * subm.loanFund;
+        notary = 1300000;
+      } else if (subm.loanFund <= 100000000) {
+        administrative = (2.75 / 100) * subm.loanFund;
+        provision = (1 / 100) * subm.loanFund;
+        notary = 1500000;
+      } else if (subm.loanFund <= 150000000) {
+        administrative = (2.3 / 100) * subm.loanFund;
+        provision = (1 / 100) * subm.loanFund;
+        notary = 1500000;
+      } else if (subm.loanFund >= 150000000) {
+        administrative = (1.95 / 100) * subm.loanFund;
+        provision = (0.5 / 100) * subm.loanFund;
+        notary = 1500000;
+      }
+
+      const payload = {
+        realDate: new Date(),
+        administrative,
+        insurance,
+        provision,
+        mandatorySavings,
+        notary,
+        checkingFee,
+        stampDuty,
+      };
+
+      await accRepository.create(subm.submId, type, payload);
+    }
+  }
+
+  await submRepository.update(id, type, req.body);
+  subm = await submRepository.getById(id, type);
+  res.status(200).json(APISuccess("Sukses merubah pengajuan", { subm }));
+}
+
 async function cancelSubm(req, res) {
   const { id, type } = req.params;
 
@@ -76,4 +151,4 @@ async function cancelSubm(req, res) {
   res.status(200).json(APISuccess("Sukses menghapus pengajuan", { subm }));
 }
 
-export default { create, get, getByUser, getSubmById, cancelSubm };
+export default { create, get, getByUser, getSubmById, update, cancelSubm };

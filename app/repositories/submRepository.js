@@ -252,4 +252,28 @@ async function deleteById(id, type) {
   return result;
 }
 
-export default { create, findAll, getByUser, getById, deleteById };
+async function update(id, type, payload) {
+  let query = "";
+  let result = undefined;
+
+  if (type === "saving") {
+    query = `
+      UPDATE pengajuan_simpanan
+      SET status = ?
+      WHERE id = ?
+    `;
+  }
+
+  if (type === "loan") {
+    query = `
+      UPDATE pengajuan_pinjaman
+      SET status = ?
+      WHERE id = ?
+    `;
+  }
+
+  result = await dbPool.execute(query, [payload.status, id]);
+  return result;
+}
+
+export default { create, findAll, getByUser, getById, deleteById, update };
