@@ -58,6 +58,7 @@ async function findConsumed(id, type) {
     query = `
       SELECT
         ksi.id AS submId,
+        ksi.id AS accId,
         ksi.nomor_rekening AS accNumber,
         p.nama AS productName,
         p.tipe AS productType,
@@ -79,6 +80,7 @@ async function findConsumed(id, type) {
     query = `
       SELECT
         kpi.id AS submId,
+        kpi.id AS accId,
         kpi.nomor_rekening AS accNumber,
         p.nama AS productName,
         p.tipe AS productType,
