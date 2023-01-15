@@ -7,6 +7,7 @@ import docRoute from "./docRoute.cjs";
 import productRoute from "./productRoute.js";
 import notifRoute from "./notifRoute.js";
 import subm from "./submRoute.js";
+import trans from "./transRoute.js";
 
 router.get("/", (req, res) => {
   res.json({ message: "server running" });
@@ -18,5 +19,6 @@ router.use("/docs", docRoute);
 router.use("/products", productRoute);
 router.use("/notif", notifRoute);
 router.use("/subm", subm);
+router.use("/trans", trans);
 
 export default router;
