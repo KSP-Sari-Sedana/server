@@ -13,10 +13,29 @@ async function findAll() {
       angsuran AS installment,
       status
     FROM produk
-    WHERE status = 'aktif'
   `;
 
   const [result] = await dbPool.execute(query);
+  return result;
+}
+
+async function findByStatus(status) {
+  const query = `
+    SELECT
+      id,
+      nama AS name,
+      foto AS image,
+      deskripsi AS description,
+      TRUNCATE(bunga, 2) AS interest,
+      tipe AS type,
+      setoran AS deposit, tenor,
+      angsuran AS installment,
+      status
+    FROM produk
+    WHERE status = ?
+  `;
+
+  const [result] = await dbPool.execute(query, [status]);
   return result;
 }
 
@@ -40,13 +59,24 @@ async function findById(id) {
   return result[0];
 }
 
-async function create(namaProduk, fotoProduk, deskripsiProduk, bungaProduk, tipeProduk, setoranProduk, tenorProduk, angsuranProduk) {
-  let query = `
-    INSERT INTO produk(nama, foto, deskripsi, bunga, tipe, setoran, tenor, angsuran)
-    VALUES(?, ?, ?, ?, ?, ?, ?, ?)
-  `;
+async function create(name, image, description, interest, type, deposit, tenor, installment, status) {
+  let query = "";
+  let result = undefined;
 
-  const [result] = await dbPool.execute(query, [namaProduk, fotoProduk, deskripsiProduk, bungaProduk, tipeProduk, setoranProduk, tenorProduk, angsuranProduk]);
+  if (image !== "null") {
+    query = `
+      INSERT INTO produk(nama, foto, deskripsi, bunga, tipe, setoran, tenor, angsuran, status)
+      VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?)
+    `;
+    [result] = await dbPool.execute(query, [name, image, description, interest, type, deposit, tenor, installment, status]);
+  } else {
+    query = `
+      INSERT INTO produk(nama, deskripsi, bunga, tipe, setoran, tenor, angsuran, status)
+      VALUES(?, ?, ?, ?, ?, ?, ?, ?)
+    `;
+    [result] = await dbPool.execute(query, [name, description, interest, type, deposit, tenor, installment, status]);
+  }
+
   return result;
 }
 
@@ -164,4 +194,4 @@ async function findConsumedById(id, type) {
   return result;
 }
 
-export default { findAll, findById, create, findConsumed, findConsumedById };
+export default { findAll, findByStatus, findById, create, findConsumed, findConsumedById };

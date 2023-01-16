@@ -11,7 +11,11 @@ import schema from "../helpers/schema.js";
 import { APISuccess } from "../helpers/response.js";
 
 async function get(req, res) {
-  const products = await productRepository.findAll();
+  const { status } = req.query;
+
+  let products;
+  if (status) products = await productRepository.findByStatus(status);
+  else products = await productRepository.findAll();
   res.status(200).json(APISuccess("Berhasil mendapatkan produk", { products }));
 }
 
@@ -23,12 +27,11 @@ async function getById(req, res) {
 }
 
 async function create(req, res) {
-  const { role, status } = req.user;
-  if (role !== "Admin" || status !== "Aktif") {
+  if (req.user.role !== "Admin" || req.user.status !== "Aktif") {
     throw new ReqError(errorCode.NOT_ADMIN, "Anda tidak memiliki akses untuk membuat produk", { flag: "role or status" }, 403);
   }
 
-  let { name, image, description, interest, type, deposit, tenor, installment } = req.body;
+  let { name, image, description, interest, type, deposit, tenor, installment, status } = req.body;
 
   validate(schema.productName, { productName: name });
   validate(schema.productDescription, { productDescription: description });
@@ -38,18 +41,23 @@ async function create(req, res) {
   validate(schema.productTenor, { productTenor: tenor });
   validate(schema.productInstallment, { productInstallment: installment });
 
-  const ext = image.split(";")[0].match(/png|jpg|jpeg|svg/gi)?.[0];
-  if (ext === undefined) {
-    throw new ReqError(errorCode.INVALID_FILE, "File yang diupload tidak valid", { flag: "extension" }, 400);
+  let filePath = "";
+
+  if (image) {
+    const ext = image.split(";")[0].match(/png|jpg|jpeg|svg/gi)?.[0];
+    if (ext === undefined) {
+      throw new ReqError(errorCode.INVALID_FILE, "File yang diupload tidak valid", { flag: "extension" }, 400);
+    }
+
+    const base64 = image.split(",")[1];
+    const buffer = Buffer.from(base64, "base64");
+    const fileName = `${new Date().toISOString().split("T")[0].replace(/-/gim, "")}_${name.toString().toLowerCase().replace(/(\s)/g, "-")}.${ext}`;
+    filePath = `images/product/${fileName}`;
+    fs.writeFileSync(`./public/${filePath}`, buffer);
+    filePath = process.env.URL + "/" + filePath;
   }
 
-  const base64 = image.split(",")[1];
-  const buffer = Buffer.from(base64, "base64");
-  const fileName = `${new Date().toISOString().split("T")[0].replace(/-/gim, "")}_${name.toString().toLowerCase().replace(/(\s)/g, "-")}.${ext}`;
-  const filePath = `images/product/${fileName}`;
-  fs.writeFileSync(`./public/${filePath}`, buffer);
-
-  const { insertId } = await productRepository.create(name, `${process.env.URL}/${filePath}`, description, interest, type, deposit, tenor, installment);
+  const { insertId } = await productRepository.create(name, `${filePath === "" ? null : filePath}`, description, interest, type, deposit, tenor, installment, status);
   const product = await productRepository.findById(insertId);
   res.status(201).json(APISuccess("Berhasil membuat produk", { product }));
 }
