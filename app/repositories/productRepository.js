@@ -80,6 +80,45 @@ async function create(name, image, description, interest, type, deposit, tenor, 
   return result;
 }
 
+async function update(id, name, image, description, interest, type, deposit, tenor, installment, status) {
+  let query = "";
+  let result = undefined;
+
+  if (image !== "null") {
+    query = `
+      UPDATE produk
+      SET
+        nama = ?,
+        foto = ?,
+        deskripsi = ?,
+        bunga = ?,
+        tipe = ?,
+        setoran = ?,
+        tenor = ?,
+        angsuran = ?,
+        status = ?
+      WHERE id = ?;
+    `;
+    result = await dbPool.execute(query, [name, image, description, interest, type, deposit, tenor, installment, status, id]);
+  } else {
+    query = `
+      UPDATE produk
+      SET nama = ?,
+        deskripsi = ?,
+        bunga = ?,
+        tipe = ?,
+        setoran = ?,
+        tenor = ?,
+        angsuran = ?,
+        status = ?
+      WHERE id = ?;
+    `;
+    result = await dbPool.execute(query, [name, description, interest, type, deposit, tenor, installment, status, id]);
+  }
+
+  return result;
+}
+
 async function findConsumed(id, type) {
   let result = [];
   let query = "";
@@ -194,4 +233,4 @@ async function findConsumedById(id, type) {
   return result;
 }
 
-export default { findAll, findByStatus, findById, create, findConsumed, findConsumedById };
+export default { findAll, findByStatus, findById, create, update, findConsumed, findConsumedById };

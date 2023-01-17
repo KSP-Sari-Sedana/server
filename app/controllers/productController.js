@@ -10,6 +10,22 @@ import validate from "../helpers/validator.js";
 import schema from "../helpers/schema.js";
 import { APISuccess } from "../helpers/response.js";
 
+function writeFile(image, name) {
+  const ext = image.split(";")[0].match(/png|jpg|jpeg|svg/gi)?.[0];
+  if (ext === undefined) {
+    throw new ReqError(errorCode.INVALID_FILE, "File yang diupload tidak valid", { flag: "extension" }, 400);
+  }
+
+  const base64 = image.split(",")[1];
+  const buffer = Buffer.from(base64, "base64");
+  const fileName = `${new Date().toISOString().split("T")[0].replace(/-/gim, "")}_${name.toString().toLowerCase().replace(/(\s)/g, "-")}.${ext}`;
+  let filePath = `images/product/${fileName}`;
+  fs.writeFileSync(`./public/${filePath}`, buffer);
+  filePath = process.env.URL + "/" + filePath;
+
+  return filePath;
+}
+
 async function get(req, res) {
   const { status } = req.query;
 
@@ -42,24 +58,54 @@ async function create(req, res) {
   validate(schema.productInstallment, { productInstallment: installment });
 
   let filePath = "";
-
   if (image) {
-    const ext = image.split(";")[0].match(/png|jpg|jpeg|svg/gi)?.[0];
-    if (ext === undefined) {
-      throw new ReqError(errorCode.INVALID_FILE, "File yang diupload tidak valid", { flag: "extension" }, 400);
-    }
-
-    const base64 = image.split(",")[1];
-    const buffer = Buffer.from(base64, "base64");
-    const fileName = `${new Date().toISOString().split("T")[0].replace(/-/gim, "")}_${name.toString().toLowerCase().replace(/(\s)/g, "-")}.${ext}`;
-    filePath = `images/product/${fileName}`;
-    fs.writeFileSync(`./public/${filePath}`, buffer);
-    filePath = process.env.URL + "/" + filePath;
+    filePath = writeFile(image, name);
   }
 
   const { insertId } = await productRepository.create(name, `${filePath === "" ? null : filePath}`, description, interest, type, deposit, tenor, installment, status);
   const product = await productRepository.findById(insertId);
   res.status(201).json(APISuccess("Berhasil membuat produk", { product }));
+}
+
+async function update(req, res) {
+  if (req.user.role !== "Admin" || req.user.status !== "Aktif") {
+    throw new ReqError(errorCode.NOT_ADMIN, "Anda tidak memiliki akses untuk mengubah produk", { flag: "role or status" }, 403);
+  }
+
+  const { id } = req.params;
+  const product = await productRepository.findById(id);
+  if (!product) throw new ReqError(errorCode.NOT_FOUND, "Produk tidak ditemukan", { flag: "id" }, 404);
+
+  let { name, image, description, interest, type, deposit, tenor, installment, status } = req.body;
+
+  validate(schema.productName, { productName: name });
+  validate(schema.productDescription, { productDescription: description });
+  validate(schema.productInterest, { productInterest: interest });
+  validate(schema.productType, { productType: type });
+  validate(schema.productDeposit, { productDeposit: deposit });
+  validate(schema.productTenor, { productTenor: tenor });
+  validate(schema.productInstallment, { productInstallment: installment });
+
+  let filePath = "";
+  if (image) {
+    filePath = writeFile(image, name);
+  } else {
+    product.image = null;
+  }
+
+  name = name ? name : product.name;
+  image = image ? filePath : product.image;
+  description = description ? description : product.description;
+  interest = interest ? interest : product.interest;
+  type = type ? type : product.type;
+  deposit = deposit ? deposit : product.deposit;
+  tenor = tenor ? tenor : product.tenor;
+  installment = installment ? installment : product.installment;
+  status = status ? status : product.status;
+
+  await productRepository.update(id, name, image, description, interest, type, deposit, tenor, installment, status);
+  const updatedProduct = await productRepository.findById(id);
+  res.status(200).json(APISuccess("Berhasil mengubah produk", { product: updatedProduct }));
 }
 
 async function calculate(req, res) {
@@ -255,4 +301,4 @@ async function getConsumedProductById(req, res) {
   res.status(200).json(APISuccess("Sukses mendapatkan data angsuran produk", { consumedProduct }));
 }
 
-export default { get, getById, create, calculate, getConsumedProducts, getConsumedProductById };
+export default { get, getById, create, update, calculate, getConsumedProducts, getConsumedProductById };
