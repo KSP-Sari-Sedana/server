@@ -1,5 +1,111 @@
 import dbPool from "../../config/database.js";
 
+async function get() {
+  const query = `
+    SELECT
+      id,
+      username,
+      email,
+      foto AS image,
+      nama_depan AS firstName,
+      nama_belakang AS lastName,
+      telepon AS cellphone,
+      provinsi AS province,
+      kabupaten AS district,
+      kecamatan AS subdistrict,
+      alamat AS address,
+      nip AS nin,
+      pekerjaan AS job,
+      gaji AS salary,
+      pengeluaran AS expense,
+      role,
+      status
+    FROM pengguna`;
+  const [result] = await dbPool.execute(query);
+  return result;
+}
+
+async function getByStatus(status) {
+  const query = `
+    SELECT
+      id,
+      username,
+      email,
+      foto AS image,
+      nama_depan AS firstName,
+      nama_belakang AS lastName,
+      telepon AS cellphone,
+      provinsi AS province,
+      kabupaten AS district,
+      kecamatan AS subdistrict,
+      alamat AS address,
+      nip AS nin,
+      pekerjaan AS job,
+      gaji AS salary,
+      pengeluaran AS expense,
+      role,
+      status
+    FROM pengguna
+    WHERE status = ?
+  `;
+  const [result] = await dbPool.execute(query, [status]);
+  return result;
+}
+
+async function getByRole(role) {
+  const query = `
+    SELECT
+      id,
+      username,
+      email,
+      foto AS image,
+      nama_depan AS firstName,
+      nama_belakang AS lastName,
+      telepon AS cellphone,
+      provinsi AS province,
+      kabupaten AS district,
+      kecamatan AS subdistrict,
+      alamat AS address,
+      nip AS nin,
+      pekerjaan AS job,
+      gaji AS salary,
+      pengeluaran AS expense,
+      role,
+      status
+    FROM pengguna
+    WHERE role = ?
+  `;
+  const [result] = await dbPool.execute(query, [role]);
+  return result;
+}
+
+async function getByStatusAndRole(status, role) {
+  const query = `
+    SELECT
+      id,
+      username,
+      email,
+      foto AS image,
+      nama_depan AS firstName,
+      nama_belakang AS lastName,
+      telepon AS cellphone,
+      provinsi AS province,
+      kabupaten AS district,
+      kecamatan AS subdistrict,
+      alamat AS address,
+      nip AS nin,
+      pekerjaan AS job,
+      gaji AS salary,
+      pengeluaran AS expense,
+      role,
+      status
+    FROM pengguna
+    WHERE status = ? AND role = ?
+  `;
+  const [result] = await dbPool.execute(query, [status, role]);
+  return result;
+}
+
 async function findAvailableCredential(columnName, value) {
   const query = `
     SELECT ${columnName}
@@ -68,4 +174,4 @@ async function create(username, namaDepan, namaBelakang, email, hashedPassword) 
   return result[0];
 }
 
-export default { findAvailableCredential, findByCredential, create };
+export default { get, getByStatus, getByRole, getByStatusAndRole, findAvailableCredential, findByCredential, create };

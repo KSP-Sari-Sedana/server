@@ -7,6 +7,33 @@ import validate from "../helpers/validator.js";
 import schema from "../helpers/schema.js";
 import { APISuccess } from "../helpers/response.js";
 
+async function get(req, res) {
+  const { status, role } = req.query;
+
+  if ((req.user.role !== "Admin" && req.user.role !== "Teller") || req.user.status !== "Aktif") {
+    throw new APIError(errorCode.RESOURCE_FORBIDDEN, "Akses mendapatkan data user ditolak", 403);
+  }
+
+  let users = undefined;
+  if (status && role) {
+    users = await userRepository.getByStatusAndRole(status, role);
+  } else if (status) {
+    users = await userRepository.getByStatus(status);
+  } else if (role) {
+    users = await userRepository.getByRole(role);
+  } else {
+    users = await userRepository.get();
+  }
+
+  if (!users) throw new APIError(errorCode.RESOURCE_NOT_FOUND, "User tidak ditemukan", 404);
+
+  users.forEach((user) => {
+    delete user.password;
+  });
+
+  res.status(200).json(APISuccess("Sukses mendapatkan data user", { users }));
+}
+
 async function register(req, res) {
   let { username, firstName, lastName, email, password } = req.body;
 
@@ -63,4 +90,4 @@ async function getMyProfile(req, res) {
   res.status(200).json(APISuccess("Sukses mendapatkan data diri", { user }));
 }
 
-export default { register, getByUsername, getMyProfile };
+export default { get, register, getByUsername, getMyProfile };
