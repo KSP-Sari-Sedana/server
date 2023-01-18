@@ -7,7 +7,6 @@ async function getByUser(id) {
       tanggal AS date,
       kategori AS category,
       detail,
-      link,
       is_read AS isRead
     FROM notifikasi
     WHERE pengguna_id = ?
@@ -26,7 +25,6 @@ async function getById(id) {
       tanggal AS date,
       kategori AS category,
       detail,
-      link,
       is_read AS isRead
     FROM notifikasi
     WHERE id = ?
