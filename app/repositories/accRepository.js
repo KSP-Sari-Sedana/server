@@ -1,5 +1,35 @@
 import dbPool from "../../config/database.js";
 
+async function getById(id, type) {
+  let query = "";
+  if (type === "saving") {
+    query = `
+      SELECT 
+        id AS accId,
+        pengajuan_simpanan_id AS submId,
+        nomor_rekening AS accNumber,
+        tanggal_realisasi AS realDate,
+        status
+      FROM kitir_simpanan
+      WHERE id = ?
+    `;
+  } else if (type === "loan") {
+    query = `
+      SELECT
+        id AS accId,
+        pengajuan_pinjaman_id AS submId,
+        nomor_rekening AS accNumber,
+        tanggal_realisasi AS realDate,
+        status
+      FROM kitir_pinjaman
+      WHERE id = ?
+    `;
+  }
+
+  const [result] = await dbPool.execute(query, [id]);
+  return result[0];
+}
+
 async function create(id, type, payload) {
   let query = "";
 
@@ -36,4 +66,24 @@ async function create(id, type, payload) {
   }
 }
 
-export default { create };
+async function setStatus(id, type, status) {
+  let query = "";
+  let result = undefined;
+  if (type === "saving") {
+    query = `
+      UPDATE kitir_simpanan
+      SET status = ?
+      WHERE id = ?
+    `;
+  } else if (type === "loan") {
+    query = `
+      UPDATE kitir_pinjaman
+      SET status = ?
+      WHERE id = ?
+    `;
+  }
+  result = await dbPool.execute(query, [status, id]);
+  return result[0];
+}
+
+export default { getById, create, setStatus };
