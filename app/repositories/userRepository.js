@@ -174,6 +174,31 @@ async function create(username, namaDepan, namaBelakang, email, hashedPassword) 
   return result[0];
 }
 
+async function update(id, username, email, image, firstName, lastName, cellphone, province, district, subdistrict, address, nin, job, salary, expense, password) {
+  let query = `
+    UPDATE pengguna
+    SET
+      username = ?,
+      email = ?,
+      foto = ?,
+      nama_depan = ?,
+      nama_belakang = ?,
+      telepon = ?,
+      provinsi = ?,
+      kabupaten = ?,
+      kecamatan = ?,
+      alamat = ?,
+      nip = ?,
+      pekerjaan = ?,
+      gaji = ?,
+      pengeluaran = ?,
+      password = ?
+    WHERE id = ?
+  `;
+  const result = await dbPool.execute(query, [username, email, image, firstName, lastName, cellphone, province, district, subdistrict, address, nin, job, salary, expense, password, id]);
+  return result;
+}
+
 async function updateStatusAndRole(username, status, role) {
   const query = `
     UPDATE pengguna
@@ -186,4 +211,4 @@ async function updateStatusAndRole(username, status, role) {
   await dbPool.execute(query, [status, role, username]);
 }
 
-export default { get, getByStatus, getByRole, getByStatusAndRole, findAvailableCredential, findByCredential, create, updateStatusAndRole };
+export default { get, getByStatus, getByRole, getByStatusAndRole, findAvailableCredential, findByCredential, create, update, updateStatusAndRole };
