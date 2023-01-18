@@ -1,5 +1,17 @@
 import dbPool from "../../config/database.js";
 
+async function create(userId, date, category, detail) {
+  const query = `
+    INSERT INTO notifikasi (pengguna_id, tanggal, kategori, detail)
+    VALUES (?, ?, ?, ?)
+  `;
+
+  const result = await dbPool.execute(query, [userId, date, category, detail]);
+  const { affectedRows } = result[0];
+  if (affectedRows === 1) return true;
+  return false;
+}
+
 async function getByUser(id) {
   const query = `
     SELECT
@@ -47,4 +59,4 @@ async function markAsRead(id) {
   return false;
 }
 
-export default { getByUser, getById, markAsRead };
+export default { create, getByUser, getById, markAsRead };

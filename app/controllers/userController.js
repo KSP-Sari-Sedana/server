@@ -1,6 +1,7 @@
 import bcrypt from "bcryptjs";
 
 import userRepository from "../repositories/userRepository.js";
+import notifRepository from "../repositories/notifRepository.js";
 import errorCode from "../constants/errorCode.js";
 import { ReqError, APIError } from "../helpers/appError.js";
 import validate from "../helpers/validator.js";
@@ -58,6 +59,7 @@ async function register(req, res) {
   lastName = lastName[0].toUpperCase() + lastName.slice(1);
 
   const user = await userRepository.create(username, firstName, lastName, email, hashedPassword);
+  await notifRepository.create(user.id, new Date(), "Akun", "Selamat datang, lengkapi profil dan lakukan pembayaran modal di koperasi untuk mengaktifkan akun Anda.");
 
   res.status(201).json(APISuccess("Registrasi berhasil", { user }));
 }
