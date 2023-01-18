@@ -174,4 +174,16 @@ async function create(username, namaDepan, namaBelakang, email, hashedPassword) 
   return result[0];
 }
 
-export default { get, getByStatus, getByRole, getByStatusAndRole, findAvailableCredential, findByCredential, create };
+async function updateStatusAndRole(username, status, role) {
+  const query = `
+    UPDATE pengguna
+    SET
+      status = ?,
+      role = ?
+    WHERE username = ?
+  `;
+
+  await dbPool.execute(query, [status, role, username]);
+}
+
+export default { get, getByStatus, getByRole, getByStatusAndRole, findAvailableCredential, findByCredential, create, updateStatusAndRole };

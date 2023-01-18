@@ -90,4 +90,21 @@ async function getMyProfile(req, res) {
   res.status(200).json(APISuccess("Sukses mendapatkan data diri", { user }));
 }
 
-export default { get, register, getByUsername, getMyProfile };
+async function setStatusAndRole(req, res) {
+  if (req.user.role !== "Admin") throw new APIError(errorCode.RESOURCE_FORBIDDEN, "Akses mengubah status dan role user ditolak", 403);
+
+  const { username } = req.params;
+  const { status, role } = req.body;
+
+  let user = await userRepository.findByCredential("username", username);
+  if (!user) throw new ReqError(errorCode.RESOURCE_NOT_FOUND, "User tidak ditemukan", { flag: "username" }, 404);
+
+  await userRepository.updateStatusAndRole(username, status, role);
+  user = await userRepository.findByCredential("username", username);
+
+  delete user.password;
+
+  res.status(200).json(APISuccess("Sukses mengubah status dan role user", { user }));
+}
+
+export default { get, register, getByUsername, getMyProfile, setStatusAndRole };
