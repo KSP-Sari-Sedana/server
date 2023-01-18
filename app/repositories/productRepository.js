@@ -132,7 +132,8 @@ async function findConsumed(id, type) {
         p.nama AS productName,
         p.tipe AS productType,
         COALESCE(SUM(asi.setoran), 0) - COALESCE(SUM(asi.penarikan), 0) AS balance,
-        ksi.tanggal_realisasi AS settleDate
+        ksi.tanggal_realisasi AS settleDate,
+        ksi.status
       FROM pengajuan_simpanan AS psi
       JOIN kitir_simpanan AS ksi ON psi.id = ksi.pengajuan_simpanan_id
       LEFT JOIN angsuran_simpanan AS asi ON ksi.id = asi.kitir_simpanan_id
@@ -154,7 +155,8 @@ async function findConsumed(id, type) {
         p.nama AS productName,
         p.tipe AS productType,
         ppi.dana - COALESCE(SUM(api.bunga + api.pokok), 0) AS loanBalance,
-        kpi.tanggal_realisasi AS settleDate
+        kpi.tanggal_realisasi AS settleDate,
+        kpi.status
       FROM pengajuan_pinjaman AS ppi
       JOIN kitir_pinjaman AS kpi ON ppi.id = kpi.pengajuan_pinjaman_id
       LEFT JOIN angsuran_pinjaman AS api ON kpi.id = api.kitir_pinjaman_id
