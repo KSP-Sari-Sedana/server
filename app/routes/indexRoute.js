@@ -9,6 +9,7 @@ import notifRoute from "./notifRoute.js";
 import subm from "./submRoute.js";
 import trans from "./transRoute.js";
 import acc from "./accRoute.js";
+import summary from "./summaryRoute.js";
 
 router.get("/", (req, res) => {
   res.json({ message: "server running" });
@@ -22,5 +23,6 @@ router.use("/notif", notifRoute);
 router.use("/subm", subm);
 router.use("/trans", trans);
 router.use("/acc", acc);
+router.use("/summary", summary);
 
 export default router;
