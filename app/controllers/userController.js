@@ -73,11 +73,13 @@ async function update(req, res) {
     validate(schema.username, { username });
     const isUsername = await userRepository.findAvailableCredential("username", username);
     if (isUsername) throw new ReqError(errorCode.USERNAME_ALREADY_EXIST, "Username tidak tersedia", { flag: "username" }, 409);
-  } else if (email !== req.user.email) {
+  }
+  if (email !== req.user.email) {
     validate(schema.email, { email });
     const isEmail = await userRepository.findAvailableCredential("email", email);
     if (isEmail) throw new ReqError(errorCode.EMAIL_ALREADY_EXIST, "Email tidak tersedia", { flag: "email" }, 409);
-  } else if (password) {
+  }
+  if (password) {
     validate(schema.password, { password });
 
     const salt = await bcrypt.genSalt(10);
