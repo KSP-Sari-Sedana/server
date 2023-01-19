@@ -59,7 +59,7 @@ async function register(req, res) {
   lastName = lastName[0].toUpperCase() + lastName.slice(1);
 
   const user = await userRepository.create(username, firstName, lastName, email, hashedPassword);
-  await notifRepository.create(user.id, new Date(), "Akun", "Selamat datang, lengkapi profil dan lakukan pembayaran modal di koperasi untuk mengaktifkan akun Anda.");
+  await notifRepository.create(user.id, new Date(), "Akun", "Selamat datang, lengkapi profil untuk memulai menikmati produk");
 
   res.status(201).json(APISuccess("Registrasi berhasil", { user }));
 }
