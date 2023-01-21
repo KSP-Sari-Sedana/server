@@ -36,19 +36,20 @@ async function create(id, type, payload) {
   if (type === "saving") {
     query = `
       INSERT INTO
-        kitir_simpanan(pengajuan_simpanan_id, tanggal_realisasi)
-      VALUES(?, ?)
+        kitir_simpanan(pengajuan_simpanan_id, status, tanggal_realisasi)
+      VALUES(?, ?, ?)
     `;
 
-    const result = await dbPool.execute(query, [id, payload.realDate]);
-    return result[0];
+    const result = await dbPool.execute(query, [id, payload.status || "Berjalan", payload.realDate]);
+    const saving = await getById(result[0].insertId, "saving");
+    return saving;
   }
 
   if (type === "loan") {
     query = `
       INSERT INTO
-        kitir_pinjaman(pengajuan_pinjaman_id, administrasi, asuransi, provisi, simpanan_wajib, notaris, biaya_pengecekan, materai, tanggal_realisasi)
-      VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?)
+        kitir_pinjaman(pengajuan_pinjaman_id, administrasi, asuransi, provisi, simpanan_wajib, notaris, biaya_pengecekan, materai, status, tanggal_realisasi)
+      VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
     `;
 
     const result = await dbPool.execute(query, [
@@ -60,9 +61,11 @@ async function create(id, type, payload) {
       payload.notary,
       payload.checkingFee,
       payload.stampDuty,
+      payload.status || "Berjalan",
       payload.realDate,
     ]);
-    return result[0];
+    const loan = await getById(result[0].insertId, "loan");
+    return loan;
   }
 }
 

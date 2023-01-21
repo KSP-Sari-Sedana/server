@@ -6,11 +6,11 @@ async function create(userId, type, subm) {
   if (type === "saving") {
     query = `
       INSERT INTO
-        pengajuan_simpanan(produk_id, pengguna_id, angsuran, tenor, tanggal_pengajuan)
-      VALUES(?, ?, ?, ?, ?)
+        pengajuan_simpanan(produk_id, pengguna_id, angsuran, tenor, tanggal_pengajuan, status)
+      VALUES(?, ?, ?, ?, ?, ?)
     `;
 
-    const result = await dbPool.execute(query, [subm.productId, userId, subm.installment, subm.tenor, subm.submDate]);
+    const result = await dbPool.execute(query, [subm.productId, userId, subm.installment, subm.tenor, subm.submDate, subm.status || "Ditinjau"]);
 
     query = `
       SELECT
@@ -36,11 +36,22 @@ async function create(userId, type, subm) {
   } else if (type === "loan") {
     query = `
       INSERT INTO
-        pengajuan_pinjaman(produk_id, pengguna_id, dana, bunga, tenor, tipe_bunga, jaminan, catatan, tanggal_pengajuan)
-      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+        pengajuan_pinjaman(produk_id, pengguna_id, dana, bunga, tenor, tipe_bunga, jaminan, catatan, tanggal_pengajuan, status)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
     `;
 
-    const result = await dbPool.execute(query, [subm.productId, userId, subm.loanFund, subm.interest, subm.tenor, subm.interestType, subm.collateral, subm.note, subm.submDate]);
+    const result = await dbPool.execute(query, [
+      subm.productId,
+      userId,
+      subm.loanFund,
+      subm.interest,
+      subm.tenor,
+      subm.interestType,
+      subm.collateral,
+      subm.note,
+      subm.submDate,
+      subm.status || "Ditinjau",
+    ]);
 
     query = `
       SELECT

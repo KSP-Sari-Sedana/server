@@ -235,4 +235,21 @@ async function findConsumedById(id, type) {
   return result;
 }
 
-export default { findAll, findByStatus, findById, create, update, findConsumed, findConsumedById };
+async function findMandatoryConsumed(id) {
+  const query = `
+    SELECT
+      pengguna_id AS userid,
+      produk_id AS productId,
+      psi.status AS submStatus,
+      ksi.status AS accStatus
+    FROM pengajuan_simpanan AS psi
+    JOIN produk AS pr on psi.produk_id = pr.id
+    JOIN kitir_simpanan AS ksi ON psi.id = ksi.pengajuan_simpanan_id
+    WHERE pengguna_id = ? AND pr.status = 'Wajib'
+  `;
+
+  const [result] = await dbPool.execute(query, [id]);
+  return result;
+}
+
+export default { findAll, findByStatus, findById, create, update, findConsumed, findConsumedById, findMandatoryConsumed };

@@ -2,6 +2,10 @@ import bcrypt from "bcryptjs";
 
 import userRepository from "../repositories/userRepository.js";
 import notifRepository from "../repositories/notifRepository.js";
+import productRepository from "../repositories/productRepository.js";
+import submRepository from "../repositories/submRepository.js";
+import accRepository from "../repositories/accRepository.js";
+import transRepository from "../repositories/transRepository.js";
 import errorCode from "../constants/errorCode.js";
 import { ReqError, APIError } from "../helpers/appError.js";
 import validate from "../helpers/validator.js";
@@ -154,6 +158,41 @@ async function setStatusAndRole(req, res) {
 
   let user = await userRepository.findByCredential("username", username);
   if (!user) throw new ReqError(errorCode.RESOURCE_NOT_FOUND, "User tidak ditemukan", { flag: "username" }, 404);
+
+  const mandatoryConsumed = await productRepository.findMandatoryConsumed(user.id);
+  if (mandatoryConsumed.length <= 0 && (role === "Admin" || role === "Teller" || role === "Anggota") && status === "Aktif") {
+    const mandatoryProduct = await productRepository.findByStatus("Wajib");
+    let mandatorySubm = [];
+    for (let i = 0; i < mandatoryProduct.length; i++) {
+      mandatorySubm.push({
+        productId: mandatoryProduct[i].id,
+        productName: mandatoryProduct[i].name,
+        userId: user.id,
+        productType: mandatoryProduct[i].type === "Simpanan" ? "saving" : "loan",
+        deposit: mandatoryProduct[i].deposit === "Sekali" ? "Selesai" : "Berjalan",
+        installment: mandatoryProduct[i].installment[0],
+        tenor: mandatoryProduct[i].tenor[0] || 0,
+        submDate: new Date(),
+        status: "Diterima",
+      });
+    }
+
+    await notifRepository.create(user.id, new Date(), "Akun", "Akun telah aktif, Anda kini dapat menikmati produk");
+
+    mandatorySubm.map(async (subm, index) => {
+      setTimeout(async () => {
+        try {
+          const { submId } = await submRepository.create(subm.userId, subm.productType, subm);
+          await notifRepository.create(subm.userId, new Date(), "Pengajuan", `Pengajuan produk ${subm.productName} diterima, selamat menikmati produk!`);
+          const { accId, accNumber } = await accRepository.create(submId, subm.productType, { status: subm.deposit, realDate: new Date() });
+          await transRepository.create(accId, subm.productType, { code: "Setoran", debit: subm.installment, credit: 0, transDate: new Date() });
+          setTimeout(async () => {
+            await notifRepository.create(subm.userId, new Date(), "Transaksi", `Transaksi dilakukan pada rekening ${accNumber} sebesar Rp. ${subm.installment.toLocaleString("ID-id")}`);
+          }, 4000 * (index + 1));
+        } catch (error) {}
+      }, 3000 * (index + 1));
+    });
+  }
 
   await userRepository.updateStatusAndRole(username, status, role);
   user = await userRepository.findByCredential("username", username);
