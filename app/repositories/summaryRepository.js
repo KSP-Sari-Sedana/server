@@ -39,4 +39,33 @@ async function findTotalLoanPayment(id) {
   return rows[0];
 }
 
-export default { findSavingBalance, findLoanTotal, findTotalLoanPayment };
+async function findTotalUser() {
+  const query = `
+    SELECT COUNT(*) AS totalUser
+    FROM pengguna;
+  `;
+  const [result] = await dbPool.execute(query);
+  return result[0];
+}
+
+async function findByUserRole(role) {
+  const query = `
+    SELECT COUNT(*) AS total${role}
+    FROM pengguna
+    WHERE role = ?;
+  `;
+  const [result] = await dbPool.execute(query, [role]);
+  return result[0];
+}
+
+async function findByUserStatus(status) {
+  const query = `
+    SELECT COUNT(*) AS total${status}
+    FROM pengguna
+    WHERE status = ?;
+  `;
+  const [result] = await dbPool.execute(query, [status]);
+  return result[0];
+}
+
+export default { findSavingBalance, findLoanTotal, findTotalLoanPayment, findTotalUser, findByUserRole, findByUserStatus };
