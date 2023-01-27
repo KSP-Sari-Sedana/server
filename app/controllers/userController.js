@@ -1,3 +1,4 @@
+import fs from "fs";
 import bcrypt from "bcryptjs";
 
 import userRepository from "../repositories/userRepository.js";
@@ -12,6 +13,22 @@ import validate from "../helpers/validator.js";
 import format from "../helpers/formatter.js";
 import schema from "../helpers/schema.js";
 import { APISuccess } from "../helpers/response.js";
+
+function writeFile(image, name) {
+  const ext = image.split(";")[0].match(/png|jpg|jpeg|svg/gi)?.[0];
+  if (ext === undefined) {
+    throw new ReqError(errorCode.INVALID_FILE, "File yang diupload tidak valid", { flag: "extension" }, 400);
+  }
+
+  const base64 = image.split(",")[1];
+  const buffer = Buffer.from(base64, "base64");
+  const fileName = `${name.toString().toLowerCase().replace(/(\s)/g, "-")}.${ext}`;
+  let filePath = `images/profile/${fileName}`;
+  fs.writeFileSync(`./public/${filePath}`, buffer);
+  filePath = process.env.URL + "/" + filePath;
+
+  return filePath;
+}
 
 async function get(req, res) {
   const { status, role } = req.query;
@@ -101,12 +118,20 @@ async function update(req, res) {
     hashedPassword = await bcrypt.hash(newPassword, salt);
   }
 
+  let filePath = "";
+  if (image) {
+    let url = /(http|https):\/\/(\w+:{0,1}\w*)?(\S+)(:[0-9]+)?(\/|\/([\w#!:.?+=&%!\-\/]))?/;
+    if (!url.test(image)) {
+      filePath = writeFile(image, user.username);
+    }
+  }
+
   validate(schema.firstName, { firstName });
   validate(schema.lastName, { lastName });
 
   username = username || user.username;
   email = email || user.email;
-  image = image || user.image;
+  image = filePath ? filePath : user.image;
   firstName = firstName || user.firstName;
   lastName = lastName || user.lastName;
   cellphone = cellphone || user.cellphone;
