@@ -70,7 +70,7 @@ async function register(req, res) {
 }
 
 async function update(req, res) {
-  let { username, email, image, firstName, lastName, cellphone, province, district, subdistrict, address, nin, job, salary, expense, password } = req.body;
+  let { username, email, image, firstName, lastName, cellphone, province, district, subdistrict, address, nin, job, salary, expense, oldPassword, newPassword, confirmPassword } = req.body;
 
   let hashedPassword = undefined;
 
@@ -84,18 +84,25 @@ async function update(req, res) {
     const isEmail = await userRepository.findAvailableCredential("email", email);
     if (isEmail) throw new ReqError(errorCode.EMAIL_ALREADY_EXIST, "Email tidak tersedia", { flag: "email" }, 409);
   }
-  if (password) {
-    validate(schema.password, { password });
+
+  const user = await userRepository.findByCredential("username", req.user.username);
+  if (!user) throw new ReqError(errorCode.RESOURCE_NOT_FOUND, "User tidak ditemukan", { flag: "username" }, 404);
+
+  if (oldPassword) {
+    validate(schema.password, { password: oldPassword });
+
+    const isMatch = await bcrypt.compare(oldPassword, user.password);
+    if (!isMatch) throw new ReqError(errorCode.PASSWORD_NOT_MATCH, "Password lama salah", { flag: "oldPassword" }, 400);
+
+    if (newPassword !== confirmPassword || newPassword === "" || confirmPassword === "") throw new ReqError(errorCode.PASSWORD_NOT_MATCH, "Password baru tidak sama", { flag: "confirmPassword" }, 400);
+    validate(schema.password, { password: newPassword });
 
     const salt = await bcrypt.genSalt(10);
-    hashedPassword = await bcrypt.hash(password, salt);
+    hashedPassword = await bcrypt.hash(newPassword, salt);
   }
 
   validate(schema.firstName, { firstName });
   validate(schema.lastName, { lastName });
-
-  const user = await userRepository.findByCredential("username", req.user.username);
-  if (!user) throw new ReqError(errorCode.RESOURCE_NOT_FOUND, "User tidak ditemukan", { flag: "username" }, 404);
 
   username = username || user.username;
   email = email || user.email;
@@ -111,12 +118,12 @@ async function update(req, res) {
   job = job || user.job;
   salary = salary || user.salary;
   expense = expense || user.expense;
-  password = hashedPassword || user.password;
+  oldPassword = hashedPassword || user.password;
 
   firstName = firstName[0].toUpperCase() + firstName.slice(1);
   lastName = lastName[0].toUpperCase() + lastName.slice(1);
 
-  await userRepository.update(user.id, username, email, image, firstName, lastName, cellphone, province, district, subdistrict, address, nin, job, salary, expense, password);
+  await userRepository.update(user.id, username, email, image, firstName, lastName, cellphone, province, district, subdistrict, address, nin, job, salary, expense, oldPassword);
 
   const updatedUser = await userRepository.findByCredential("username", username);
   delete updatedUser.password;
