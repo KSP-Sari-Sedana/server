@@ -4,25 +4,29 @@ async function getById(id, type) {
   let query = "";
   if (type === "saving") {
     query = `
-      SELECT 
-        id AS accId,
-        pengajuan_simpanan_id AS submId,
-        nomor_rekening AS accNumber,
-        tanggal_realisasi AS realDate,
-        status
-      FROM kitir_simpanan
-      WHERE id = ?
+      SELECT
+        ksi.id AS accId,
+        ksi.pengajuan_simpanan_id AS submId,
+        psi.pengguna_id AS userId,
+        ksi.nomor_rekening AS accNumber,
+        ksi.tanggal_realisasi AS realDate,
+        ksi.status
+      FROM kitir_simpanan AS ksi
+      JOIN pengajuan_simpanan psi on psi.id = ksi.pengajuan_simpanan_id
+      WHERE ksi.id = ?
     `;
   } else if (type === "loan") {
     query = `
       SELECT
-        id AS accId,
-        pengajuan_pinjaman_id AS submId,
-        nomor_rekening AS accNumber,
-        tanggal_realisasi AS realDate,
-        status
-      FROM kitir_pinjaman
-      WHERE id = ?
+        kpi.id AS accId,
+        kpi.pengajuan_pinjaman_id AS submId,
+        ppi.pengguna_id AS userId,
+        kpi.nomor_rekening AS accNumber,
+        kpi.tanggal_realisasi AS realDate,
+        kpi.status
+      FROM kitir_pinjaman AS kpi
+      JOIN pengajuan_pinjaman ppi on ppi.id = kpi.pengajuan_pinjaman_id
+      WHERE kpi.id = ?
     `;
   }
 

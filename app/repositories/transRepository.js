@@ -24,7 +24,7 @@ async function create(accId, type, data) {
     `;
 
     const [result] = await dbPool.execute(query, [saving.insertId]);
-    return result;
+    return result[0];
   }
 
   if (type === "loan") {
@@ -48,7 +48,7 @@ async function create(accId, type, data) {
     `;
 
     const [result] = await dbPool.execute(query, [loan.insertId]);
-    return result;
+    return result[0];
   }
 }
 
