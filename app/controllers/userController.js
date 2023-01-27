@@ -9,6 +9,7 @@ import transRepository from "../repositories/transRepository.js";
 import errorCode from "../constants/errorCode.js";
 import { ReqError, APIError } from "../helpers/appError.js";
 import validate from "../helpers/validator.js";
+import format from "../helpers/formatter.js";
 import schema from "../helpers/schema.js";
 import { APISuccess } from "../helpers/response.js";
 
@@ -187,7 +188,12 @@ async function setStatusAndRole(req, res) {
           const { accId, accNumber } = await accRepository.create(submId, subm.productType, { status: subm.deposit, realDate: new Date() });
           await transRepository.create(accId, subm.productType, { code: "Setoran", debit: subm.installment, credit: 0, transDate: new Date() });
           setTimeout(async () => {
-            await notifRepository.create(subm.userId, new Date(), "Transaksi", `Transaksi dilakukan pada rekening ${accNumber} sebesar Rp. ${subm.installment.toLocaleString("ID-id")}`);
+            await notifRepository.create(
+              subm.userId,
+              new Date(),
+              "Transaksi",
+              `Transaksi dilakukan pada rekening ${format.accNumber(accNumber)} sebesar Rp. ${subm.installment.toLocaleString("ID-id")}`
+            );
           }, 4000 * (index + 1));
         } catch (error) {}
       }, 3000 * (index + 1));
