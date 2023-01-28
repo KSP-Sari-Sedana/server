@@ -1,6 +1,7 @@
 import submRepository from "../repositories/submRepository.js";
 import userRepository from "../repositories/userRepository.js";
 import accRepository from "../repositories/accRepository.js";
+import notifRepository from "../repositories/notifRepository.js";
 import errorCode from "../constants/errorCode.js";
 import { APIError, ReqError } from "../helpers/appError.js";
 import { APISuccess } from "../helpers/response.js";
@@ -15,7 +16,7 @@ async function create(req, res) {
 
   subm = await submRepository.create(req.user.id, type, req.body);
   if (!subm) throw new APIError(errorCode.INVALID_SUBM, "Pengajuan gagal dibuat", 500);
-
+  await notifRepository.create(subm.userId, new Date(), "Pengajuan", `Pengajuan produk ${subm.productName} sudah diterima. Admin sedang meninjau pengajuan anda`);
   res.status(201).json(APISuccess("Pengajuan berhasil dibuat", { subm }));
 }
 
@@ -136,6 +137,19 @@ async function update(req, res) {
 
   await submRepository.update(id, type, req.body);
   subm = await submRepository.getById(id, type);
+  await notifRepository.create(
+    subm.userId,
+    new Date(),
+    "Pengajuan",
+    `Pengajuan produk ${subm.productName} tanggal ${subm.submDate.toLocaleString("ID-id", {
+      month: "short",
+      day: "2-digit",
+      year: "numeric",
+      hour: "2-digit",
+      minute: "2-digit",
+      second: "2-digit",
+    })} telah ${subm.status.toLowerCase()} oleh Admin`
+  );
   res.status(200).json(APISuccess("Sukses merubah pengajuan", { subm }));
 }
 
@@ -148,6 +162,21 @@ async function cancelSubm(req, res) {
   if (subm.userId !== req.user.id) throw new ReqError(errorCode.INVALID_USER, "User tidak ditemukan", { flag: "id", type }, 404);
 
   await submRepository.deleteById(id, type);
+  if (subm.status === "Ditinjau") {
+    await notifRepository.create(
+      subm.userId,
+      new Date(),
+      "Pengajuan",
+      `Pengajuan produk ${subm.productName} tanggal ${subm.submDate.toLocaleString("ID-id", {
+        month: "short",
+        day: "2-digit",
+        year: "numeric",
+        hour: "2-digit",
+        minute: "2-digit",
+        second: "2-digit",
+      })} berhasil dibatalkan`
+    );
+  }
   res.status(200).json(APISuccess("Sukses menghapus pengajuan", { subm }));
 }
 
