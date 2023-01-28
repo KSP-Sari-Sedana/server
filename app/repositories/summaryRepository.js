@@ -28,7 +28,7 @@ async function findLoanTotal(id) {
 async function findTotalLoanPayment(id) {
   const query = `
     SELECT
-      SUM(api.pokok + api.bunga) AS totalLoanPayment
+      SUM(api.pokok) AS totalLoanPayment
     FROM pengajuan_pinjaman ppi
     JOIN kitir_pinjaman kpi ON ppi.id = kpi.pengajuan_pinjaman_id
     JOIN angsuran_pinjaman api ON kpi.id = api.kitir_pinjaman_id
