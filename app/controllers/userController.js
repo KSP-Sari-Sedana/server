@@ -215,20 +215,35 @@ async function setStatusAndRole(req, res) {
     mandatorySubm.map(async (subm, index) => {
       setTimeout(async () => {
         try {
-          const { submId } = await submRepository.create(subm.userId, subm.productType, subm);
-          await notifRepository.create(subm.userId, new Date(), "Pengajuan", `Pengajuan produk ${subm.productName} diterima, selamat menikmati produk!`);
-          const { accId, accNumber } = await accRepository.create(submId, subm.productType, { status: subm.deposit, realDate: new Date() });
-          await transRepository.create(accId, subm.productType, { code: "Setoran", debit: subm.installment, credit: 0, transDate: new Date() });
+          const submission = await submRepository.create(subm.userId, subm.productType, subm);
+          await notifRepository.create(subm.userId, new Date(), "Pengajuan", `Pengajuan produk ${submission.productName} sudah diterima. Admin sedang meninjau pengajuan Anda`);
+          const acc = await accRepository.create(submission.submId, subm.productType, { status: subm.deposit, realDate: new Date() });
+          setTimeout(async () => {
+            await notifRepository.create(
+              subm.userId,
+              new Date(),
+              "Pengajuan",
+              `Pengajuan produk ${subm.productName} tanggal ${submission.submDate.toLocaleString("ID-id", {
+                month: "short",
+                day: "2-digit",
+                year: "numeric",
+                hour: "2-digit",
+                minute: "2-digit",
+                second: "2-digit",
+              })} telah diterima oleh Admin`
+            );
+          }, 2000 * (index + 1));
+          await transRepository.create(acc.accId, subm.productType, { code: "Setoran", debit: subm.installment, credit: 0, transDate: new Date() });
           setTimeout(async () => {
             await notifRepository.create(
               subm.userId,
               new Date(),
               "Transaksi",
-              `Transaksi dilakukan pada rekening ${format.accNumber(accNumber)} sebesar Rp. ${subm.installment.toLocaleString("ID-id")}`
+              `Transaksi dilakukan pada rekening ${format.accNumber(acc.accNumber)} sebesar Rp. ${subm.installment.toLocaleString("ID-id")}`
             );
-          }, 4000 * (index + 1));
+          }, 3000 * (index + 1));
         } catch (error) {}
-      }, 3000 * (index + 1));
+      }, 1000 * (index + 1));
     });
   }
 

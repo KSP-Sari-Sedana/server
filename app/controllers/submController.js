@@ -16,7 +16,7 @@ async function create(req, res) {
 
   subm = await submRepository.create(req.user.id, type, req.body);
   if (!subm) throw new APIError(errorCode.INVALID_SUBM, "Pengajuan gagal dibuat", 500);
-  await notifRepository.create(subm.userId, new Date(), "Pengajuan", `Pengajuan produk ${subm.productName} sudah diterima. Admin sedang meninjau pengajuan anda`);
+  await notifRepository.create(subm.userId, new Date(), "Pengajuan", `Pengajuan produk ${subm.productName} sudah diterima. Admin sedang meninjau pengajuan Anda`);
   res.status(201).json(APISuccess("Pengajuan berhasil dibuat", { subm }));
 }
 
