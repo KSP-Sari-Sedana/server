@@ -290,7 +290,7 @@ async function getConsumedProductById(req, res) {
 
     transDetail.forEach((transaction) => {
       transaction.total = transaction.principal + transaction.interest + transaction.penaltyFee;
-      loanBalance -= transaction.total - transaction.penaltyFee;
+      loanBalance -= transaction.principal;
       transaction.loanBalance = loanBalance;
     });
 
