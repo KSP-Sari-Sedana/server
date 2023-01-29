@@ -181,9 +181,12 @@ async function findConsumedById(id, type) {
       SELECT
         ksi.id,
         psi.pengguna_id AS userId,
+        psi.tenor,
         ksi.nomor_rekening AS accNumber,
+        ksi.status,
         p.nama AS productName,
         p.tipe AS productType,
+        p.setoran AS deposit,
         COALESCE(SUM(asi.setoran), 0) - COALESCE(SUM(asi.penarikan), 0) AS balance,
         ksi.tanggal_realisasi AS settleDate
       FROM pengajuan_simpanan AS psi
@@ -214,10 +217,12 @@ async function findConsumedById(id, type) {
         kpi.nomor_rekening AS accNumber,
         pr.nama AS productName,
         pr.tipe AS productType,
+        pr.setoran AS deposit,
         ppi.dana AS loanFund,
         COALESCE(SUM(api.pokok), 0) AS totalPayment,
         ppi.dana - COALESCE(SUM(api.pokok), 0) AS loanBalance,
         COALESCE(SUM(api.denda), 0) AS penaltyTotal,
+        kpi.status,
         kpi.tanggal_realisasi AS settleDate
       FROM pengajuan_pinjaman AS ppi
       JOIN pengguna AS pe ON ppi.pengguna_id = pe.id
