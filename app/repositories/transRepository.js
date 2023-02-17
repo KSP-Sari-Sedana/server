@@ -55,37 +55,37 @@ async function create(accId, type, data) {
 async function get(limit) {
   const query = `
     SELECT
-      pr.nama AS productName,
-      CONCAT(pe.nama_depan, ' ', pe.nama_belakang) AS name,
-      pe.foto AS image,
-      pe.role,
-      ksi.nomor_rekening AS accNumber,
-      asi.tanggal AS transDate,
-      SUM(asi.setoran + asi.penarikan) AS total
-    FROM produk pr
-    JOIN pengajuan_simpanan psi ON pr.id = psi.produk_id
-    JOIN kitir_simpanan ksi ON psi.id = ksi.pengajuan_simpanan_id
-    JOIN angsuran_simpanan asi ON ksi.id = asi.kitir_simpanan_id
-    JOIN pengguna pe ON psi.pengguna_id = pe.id
-    GROUP BY pr.nama, pe.nama_depan, pe.foto, pe.role, ksi.nomor_rekening, asi.tanggal
+      CONCAT(pengguna.nama_depan, ' ', pengguna.nama_belakang) AS name,
+      pengguna.foto AS image,
+      pengguna.role,
+      kitir_pinjaman.nomor_rekening AS accNumber,
+      angsuran_pinjaman.tanggal AS transDate,
+      (angsuran_pinjaman.pokok + angsuran_pinjaman.bunga + angsuran_pinjaman.denda) AS total
+    FROM kitir_pinjaman
+      JOIN angsuran_pinjaman ON kitir_pinjaman.id = angsuran_pinjaman.kitir_pinjaman_id
+      JOIN pengajuan_pinjaman ON kitir_pinjaman.pengajuan_pinjaman_id = pengajuan_pinjaman.id
+      JOIN pengguna ON pengajuan_pinjaman.pengguna_id = pengguna.id
 
     UNION
 
     SELECT
-      pr.nama AS produk,
-      CONCAT(pe.nama_depan, ' ', pe.nama_belakang) AS name,
-      pe.foto AS image,
-      pe.role,
-      kpi.nomor_rekening AS accNumber,
-      api.tanggal AS transDate,
-      SUM(api.pokok + api.bunga + api.denda) AS total
-    FROM produk pr
-    JOIN pengajuan_pinjaman ppi ON pr.id = ppi.produk_id
-    JOIN kitir_pinjaman kpi ON ppi.id = kpi.pengajuan_pinjaman_id
-    JOIN angsuran_pinjaman api ON kpi.id = api.kitir_pinjaman_id
-    JOIN pengguna pe ON ppi.pengguna_id = pe.id
-    GROUP BY pr.nama, pe.nama_depan, pe.foto, pe.role, kpi.nomor_rekening, api.tanggal
-    ORDER BY transDate DESC LIMIT ?
+      CONCAT(pengguna.nama_depan, ' ', pengguna.nama_belakang) AS name,
+      pengguna.foto AS image,
+      pengguna.role,
+      kitir_simpanan.nomor_rekening AS accNumber,
+      angsuran_simpanan.tanggal AS transDate,
+      CASE
+          WHEN angsuran_simpanan.sandi = 'Setoran' THEN angsuran_simpanan.setoran
+          WHEN angsuran_simpanan.sandi = 'Penarikan' THEN angsuran_simpanan.penarikan
+          WHEN angsuran_simpanan.sandi = 'Bunga' THEN angsuran_simpanan.setoran - angsuran_simpanan.penarikan
+      ELSE 0
+      END AS total
+    FROM kitir_simpanan
+      JOIN angsuran_simpanan ON kitir_simpanan.id = angsuran_simpanan.kitir_simpanan_id
+      JOIN pengajuan_simpanan ON kitir_simpanan.pengajuan_simpanan_id = pengajuan_simpanan.id
+      JOIN pengguna ON pengajuan_simpanan.pengguna_id = pengguna.id
+    ORDER BY transDate DESC
+    LIMIT ?;
   `;
 
   const [result] = await dbPool.execute(query, [limit]);
