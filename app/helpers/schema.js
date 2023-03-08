@@ -110,8 +110,8 @@ const productType = Joi.object({
 });
 
 const productDeposit = Joi.object({
-  productDeposit: Joi.string().valid("Bulanan", "Harian").required().messages({
-    "any.only": "Setoran produk harus bulanan atau harian",
+  productDeposit: Joi.string().valid("Bulanan", "Harian", "Sekali").required().messages({
+    "any.only": "Setoran produk harus bulanan, harian atau sekali",
     "any.required": "Setoran produk harus diisi",
   }),
 }).messages({
