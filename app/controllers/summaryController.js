@@ -29,14 +29,14 @@ async function getSummaryByAdmin(req, res) {
   const totalAdmin = await summaryRepository.findByUserRole("Admin");
   const totalTeller = await summaryRepository.findByUserRole("Teller");
   const totalAnggota = await summaryRepository.findByUserRole("Anggota");
-  const totalMember = await summaryRepository.findByUserRole("Member");
+  const totalWarga = await summaryRepository.findByUserRole("Warga");
   const totalActive = await summaryRepository.findByUserStatus("Aktif");
   const totalReviewed = await summaryRepository.findByUserStatus("Ditinjau");
   const totalNonActive = await summaryRepository.findByUserStatus("Nonaktif");
   res.status(200).json(
     APISuccess("Summary berhasil didapatkan", {
       user: totalUser,
-      role: { ...totalAdmin, ...totalTeller, ...totalAnggota, ...totalMember },
+      role: { ...totalAdmin, ...totalTeller, ...totalAnggota, ...totalWarga },
       status: { ...totalActive, ...totalReviewed, ...totalNonActive },
     })
   );
