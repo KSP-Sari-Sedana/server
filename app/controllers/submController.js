@@ -23,6 +23,7 @@ async function create(req, res) {
 async function get(req, res) {
   const { username } = req.user;
   const { type } = req.params;
+  const { status } = req.query;
 
   if (type !== "saving" && type !== "loan") throw new ReqError(errorCode.INVALID_PRODUCT_TYPE, "Tipe produk tidak ditemukan", { flag: "type", type }, 404);
 
@@ -31,7 +32,12 @@ async function get(req, res) {
 
   if (user.role !== "Admin") throw new APIError(errorCode.INVALID_USER, "User tidak ditemukan", 404);
 
-  const subms = await submRepository.findAll(type);
+  let subms;
+  if (status) {
+    subms = await submRepository.findByStatus(type, status);
+  } else {
+    subms = await submRepository.findAll(type);
+  }
   if (!subms) throw new ReqError(errorCode.INVALID_PRODUCT_TYPE, "Pengajuan tidak ditemukan", { flag: "type", type }, 404);
 
   res.status(200).json(APISuccess("Pengajuan berhasil didapatkan", { subms }));
