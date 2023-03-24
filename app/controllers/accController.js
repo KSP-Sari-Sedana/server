@@ -9,6 +9,12 @@ async function setStatus(req, res) {
   const { type, id } = req.params;
   const { status } = req.body;
 
+  if (type !== "saving" && type !== "loan") throw new APIError(errorCode.RESOURCE_NOT_FOUND, "Tipe produk tidak ditemukan", 404);
+  if (status !== "Berjalan" && status !== "Selesai") throw new APIError(errorCode.RESOURCE_NOT_FOUND, "Status harus berjalan atau selesai", 404);
+
+  const account = await accRepository.getById(id, type);
+  if (!account) throw new APIError(errorCode.RESOURCE_NOT_FOUND, "Kitir tidak ditemukan", 404);
+
   let result = undefined;
   if (type === "saving") {
     result = await accRepository.setStatus(id, type, status);
