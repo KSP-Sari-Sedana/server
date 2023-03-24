@@ -68,4 +68,37 @@ async function findByUserStatus(status) {
   return result[0];
 }
 
-export default { findSavingBalance, findLoanTotal, findTotalLoanPayment, findTotalUser, findByUserRole, findByUserStatus };
+async function findTotalLoanBalance() {
+  const query = `
+    SELECT SUM(pokok) + SUM(bunga) + SUM(denda) AS totalLoanBalance FROM angsuran_pinjaman;
+  `;
+  const [result] = await dbPool.execute(query);
+  return result[0];
+}
+
+async function findTotalSavingBalance() {
+  const query = `
+    SELECT SUM(setoran) AS totalSavingBalance FROM angsuran_simpanan
+    WHERE sandi = 'Setoran' OR sandi = 'Bunga' OR sandi = 'Administrasi';
+  `;
+  const [result] = await dbPool.execute(query);
+  return result[0];
+}
+
+async function findTotalTransaction(type, date) {
+  let query = "";
+  if (type === "saving") {
+    query = `
+      SELECT SUM(setoran) AS totalSavingTrans FROM angsuran_simpanan WHERE DATE(tanggal) = ?;
+    `;
+  } else if (type === "loan") {
+    query = `
+      SELECT SUM(pokok) + SUM(bunga) + SUM(denda) AS totalLoanTrans FROM angsuran_pinjaman WHERE DATE(tanggal) = ?;
+    `;
+  }
+
+  const [result] = await dbPool.execute(query, [date]);
+  return result[0];
+}
+
+export default { findSavingBalance, findLoanTotal, findTotalLoanPayment, findTotalUser, findByUserRole, findByUserStatus, findTotalLoanBalance, findTotalSavingBalance, findTotalTransaction };

@@ -33,11 +33,27 @@ async function getSummaryByAdmin(req, res) {
   const totalActive = await summaryRepository.findByUserStatus("Aktif");
   const totalReviewed = await summaryRepository.findByUserStatus("Ditinjau");
   const totalNonActive = await summaryRepository.findByUserStatus("Nonaktif");
+  const totalLoanBalance = await summaryRepository.findTotalLoanBalance();
+  const totalSavingBalance = await summaryRepository.findTotalSavingBalance();
+  const totalBalance = totalLoanBalance.totalLoanBalance + totalSavingBalance.totalSavingBalance;
+
+  const today = new Date().toISOString().slice(0, 10);
+  const yesterday = new Date(new Date().setDate(new Date().getDate() - 1)).toISOString().slice(0, 10);
+
+  const totalSavingTransYesterday = await summaryRepository.findTotalTransaction("saving", yesterday);
+  const totalLoanTransYesterday = await summaryRepository.findTotalTransaction("loan", yesterday);
+  const totalSavingTransToday = await summaryRepository.findTotalTransaction("saving", today);
+  const totalLoanTransToday = await summaryRepository.findTotalTransaction("loan", today);
+  const totalTransYesterday = totalSavingTransYesterday.totalSavingTrans + totalLoanTransYesterday.totalLoanTrans;
+  const totalTransToday = totalSavingTransToday.totalSavingTrans + totalLoanTransToday.totalLoanTrans;
+
   res.status(200).json(
     APISuccess("Summary berhasil didapatkan", {
       user: totalUser,
       role: { ...totalAdmin, ...totalTeller, ...totalAnggota, ...totalWarga },
       status: { ...totalActive, ...totalReviewed, ...totalNonActive },
+      balance: { ...totalLoanBalance, ...totalSavingBalance, totalBalance },
+      transaction: { totalTransYesterday, totalTransToday },
     })
   );
 }

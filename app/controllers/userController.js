@@ -247,7 +247,7 @@ async function setStatusAndRole(req, res) {
     });
   }
 
-  await userRepository.updateStatusAndRole(username, status, role);
+  await userRepository.updateStatusAndRole(username, status || "Ditinjau", role || "Warga");
   user = await userRepository.findByCredential("username", username);
 
   delete user.password;
