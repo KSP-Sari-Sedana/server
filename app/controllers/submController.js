@@ -2,6 +2,7 @@ import submRepository from "../repositories/submRepository.js";
 import userRepository from "../repositories/userRepository.js";
 import accRepository from "../repositories/accRepository.js";
 import notifRepository from "../repositories/notifRepository.js";
+import productRepository from "../repositories/productRepository.js";
 import errorCode from "../constants/errorCode.js";
 import { APIError, ReqError } from "../helpers/appError.js";
 import { APISuccess } from "../helpers/response.js";
@@ -9,11 +10,50 @@ import { APISuccess } from "../helpers/response.js";
 async function create(req, res) {
   const { type } = req.params;
   req.body.submDate = new Date();
+  const { productId, tenor, installment, loanFund, interestType } = req.body;
 
   if (type !== "saving" && type !== "loan") throw new ReqError(errorCode.INVALID_PRODUCT_TYPE, "Tipe produk tidak ditemukan", { flag: "type", type }, 404);
 
-  let subm = undefined;
+  const product = await productRepository.findById(productId);
+  if (product === undefined) {
+    throw new ReqError(errorCode.RESOURCE_NOT_FOUND, "Produk tidak ditemukan", { flag: "product" }, 404);
+  }
 
+  if (product.type === "Simpanan") {
+    if (tenor === undefined) {
+      throw new ReqError(errorCode.INVALID_TENOR, "Tenor tidak boleh kosong", { flag: "tenor" }, 400);
+    } else if (installment === undefined) {
+      throw new ReqError(errorCode.INVALID_INSTALLMENT, "Angsuran tidak boleh kosong", { flag: "installment" }, 400);
+    }
+  } else if (product.type === "Pinjaman") {
+    if (loanFund === undefined || loanFund === 0) {
+      throw new ReqError(errorCode.INVALID_LOAN, "Dana pinjaman tidak boleh kosong", { flag: "loan" }, 400);
+    } else if (loanFund < 5000000) {
+      throw new ReqError(errorCode.INVALID_LOAN, "Dana pinjaman minimal Rp 5.000.000", { flag: "loan" }, 400);
+    } else if (tenor === undefined) {
+      throw new ReqError(errorCode.INVALID_TENOR, "Tenor tidak boleh kosong", { flag: "tenor" }, 400);
+    } else if (interestType === undefined) {
+      throw new ReqError(errorCode.INVALID_INTEREST, "Jenis bunga pinjaman tidak boleh kosong", { flag: "interest" }, 400);
+    } else if (interestType !== "Menurun" && interestType !== "Tetap") {
+      throw new ReqError(errorCode.INVALID_INTEREST, "Pilihan jenis bunga menurun atau tetap", { flag: "interest" }, 400);
+    }
+  }
+
+  if (product.tenor.length > 0) {
+    const result = product.tenor.filter((number) => number === tenor);
+    if (result.length === 0) {
+      throw new ReqError(errorCode.INVALID_TENOR, "Tenor tidak tersedia", { flag: "tenor" }, 400);
+    }
+  }
+
+  if (product.installment.length > 0) {
+    const result = product.installment.filter((number) => number === installment);
+    if (result.length === 0) {
+      throw new ReqError(errorCode.INVALID_INSTALLMENT, "Angsuran tidak tersedia", { flag: "installment" }, 400);
+    }
+  }
+
+  let subm = undefined;
   subm = await submRepository.create(req.user.id, type, req.body);
   if (!subm) throw new APIError(errorCode.INVALID_SUBM, "Pengajuan gagal dibuat", 500);
   await notifRepository.create(subm.userId, new Date(), "Pengajuan", `Pengajuan produk ${subm.productName} sudah diterima. Admin sedang meninjau pengajuan Anda`);
