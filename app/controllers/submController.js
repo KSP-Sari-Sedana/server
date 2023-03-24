@@ -207,6 +207,8 @@ async function cancelSubm(req, res) {
 
   if (subm.userId !== req.user.id) throw new ReqError(errorCode.INVALID_USER, "User tidak ditemukan", { flag: "id", type }, 404);
 
+  if (subm.status === "Diterima") throw new ReqError(errorCode.INVALID_SUBM, "Pengajuan sudah diterima", { flag: "id", type }, 404);
+
   await submRepository.deleteById(id, type);
   if (subm.status === "Ditinjau") {
     await notifRepository.create(
