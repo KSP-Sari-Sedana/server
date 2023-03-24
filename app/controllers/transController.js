@@ -42,7 +42,7 @@ async function get(req, res) {
 
   if (req.user.role !== "Admin" && req.user.role !== "Teller") throw new ReqError(errorCode.INVALID_ROLE, "Role tidak ditemukan", { flag: "role", role: req.user.role }, 404);
 
-  const trans = await transRepository.get(limit);
+  const trans = await transRepository.get(limit || "10");
 
   res.status(200).json(APISuccess("Transaksi berhasil didapatkan", { trans }));
 }
